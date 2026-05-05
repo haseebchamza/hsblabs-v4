@@ -40,8 +40,8 @@ export default function Home() {
     // Refs for animation
     const heroContainerRef = useRef<HTMLDivElement>(null);
     const hRef = useRef<HTMLDivElement>(null);
-    const sIntroRef = useRef<HTMLDivElement>(null);
-    const bRef = useRef<HTMLDivElement>(null);
+    const bIntroRef = useRef<HTMLDivElement>(null);
+    const cRef = useRef<HTMLDivElement>(null);
     const typographyLayerRef = useRef<HTMLDivElement>(null);
     const bioRef = useRef<HTMLDivElement>(null);
 
@@ -103,20 +103,20 @@ export default function Home() {
         const ctx = gsap.context(() => {
             // ─── ACT I — HERO ENTRANCE ─────────────────────────────────
             const hEl = hRef.current;
-            const bEl = bRef.current;
-            const sIntro = sIntroRef.current;
+            const cEl = cRef.current;
+            const bIntro = bIntroRef.current;
 
-            if (hEl && bEl && sIntro) {
+            if (hEl && cEl && bIntro) {
                 gsap.set(hEl, { x: -25, y: "-50%", opacity: 0 });
-                gsap.set(sIntro, { x: 0, y: "-50%", opacity: 0 });
-                gsap.set(bEl, { x: 25, y: "-50%", opacity: 0 });
+                gsap.set(bIntro, { x: 0, y: "-50%", opacity: 0 });
+                gsap.set(cEl, { x: 25, y: "-50%", opacity: 0 });
 
                 gsap.set(".hero-portrait", { opacity: 0, scale: 0.95 });
                 gsap.set(".hero-title", { opacity: 0, y: 20 });
 
                 const introTl = gsap.timeline({ delay: 0.5 });
 
-                introTl.to([hEl, sIntro, bEl], {
+                introTl.to([hEl, bIntro, cEl], {
                     opacity: 1,
                     duration: 1.5,
                     ease: "power2.out",
@@ -126,8 +126,8 @@ export default function Home() {
                 const edgeDist = window.innerWidth / 2 - paddingX;
 
                 introTl.to(hEl, { x: -edgeDist, duration: 1.8, ease: "power4.inOut" }, "+=0.5");
-                introTl.to(bEl, { x: edgeDist, duration: 1.8, ease: "power4.inOut" }, "<");
-                introTl.to(sIntro, { opacity: 0, scale: 0.5, duration: 1, ease: "power2.inOut" }, "<0.2");
+                introTl.to(cEl, { x: edgeDist, duration: 1.8, ease: "power4.inOut" }, "<");
+                introTl.to(bIntro, { opacity: 0, scale: 0.5, duration: 1, ease: "power2.inOut" }, "<0.2");
 
                 introTl.to(".hero-portrait", { opacity: 0.8, scale: 1, duration: 2, ease: "power2.out" }, "-=0.5");
                 introTl.to(".hero-title", { opacity: 1, y: 0, duration: 1.5, ease: "power3.out", stagger: 0.1 }, "<0.2");
@@ -311,11 +311,11 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* H S B Letters */}
+                    {/* H B C Letters */}
                     <div className="absolute inset-0 z-40 pointer-events-none mix-blend-difference text-white">
                         <div ref={hRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform">H</div>
-                        <div ref={sIntroRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform -translate-x-1/2">S</div>
-                        <div ref={bRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform">B</div>
+                        <div ref={bIntroRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform -translate-x-1/2">B</div>
+                        <div ref={cRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform">C</div>
                     </div>
 
                     <div className="brutalist-decor opacity-0 font-mono text-[9px] md:text-[11px] text-white/60 uppercase font-bold tracking-widest z-40 pointer-events-none">

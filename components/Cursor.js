@@ -1,6 +1,17 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import gsap from "gsap";
+
+/** True on devices with a real pointer (mouse/pen). Server returns false. */
+function useFinePointer() {
+    return useSyncExternalStore(
+        () => () => {},
+        () => typeof window !== "undefined" &&
+            window.matchMedia &&
+            window.matchMedia("(pointer: fine)").matches,
+        () => false
+    );
+}
 
 /**
  * Brutalist reticle cursor — replaces native cursor with a crosshair built
@@ -20,17 +31,13 @@ export default function Cursor() {
     const reticleRef = useRef(null);
     const labelRef = useRef(null);
     const [hidden, setHidden] = useState(true);
+    const enabled = useFinePointer();
 
     useEffect(() => {
+        if (!enabled) return;
         const dot = dotRef.current;
         const reticle = reticleRef.current;
         const label = labelRef.current;
-
-        // Hide native cursor on devices with a real pointer
-        const hasFinePointer = typeof window !== "undefined" &&
-            window.matchMedia &&
-            window.matchMedia("(pointer: fine)").matches;
-        if (!hasFinePointer) return;
 
         document.body.style.cursor = "none";
         // Also hide on inputs/textareas so the reticle doesn't fight a text caret
@@ -152,7 +159,10 @@ export default function Cursor() {
             window.removeEventListener("blur", handleLeave);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [enabled]);
+
+    // Touch / coarse-pointer device → render nothing at all.
+    if (!enabled) return null;
 
     return (
         <div

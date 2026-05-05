@@ -2,6 +2,11 @@
 import React, { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { useIsBelow } from "../lib/useViewport";
+
+/** Pixel width below which we skip the Three.js terrain entirely and just
+ *  render a static gradient — saves a ton of CPU/GPU on phones + tablets. */
+const TERRAIN_BREAKPOINT = 1024;
 
 /**
  * AmbientTerrain — a procedural wireframe hill landscape that drifts slowly
@@ -84,24 +89,43 @@ function CameraDrift() {
 }
 
 export default function AmbientTerrain() {
+    // Skip on mobile/tablet (perf) + on prefers-reduced-motion (a11y).
+    const isSmall = useIsBelow(TERRAIN_BREAKPOINT);
+    const enable3D =
+        !isSmall &&
+        typeof window !== "undefined" &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     return (
         <div
             className="fixed inset-0 pointer-events-none"
             style={{ zIndex: 0 }}
             aria-hidden
         >
-            <Canvas
-                dpr={[1, 1.5]}
-                gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-                camera={{ position: [0, 1.6, 5], fov: 65, near: 0.1, far: 40 }}
-                style={{ background: "transparent" }}
-            >
-                {/* Fog pushed back so more of the terrain is visible */}
-                <fog attach="fog" args={[0x050505, 14, 32]} />
-                <ambientLight intensity={0.3} />
-                <Terrain />
-                <CameraDrift />
-            </Canvas>
+            {enable3D && (
+                <Canvas
+                    dpr={[1, 1.5]}
+                    gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
+                    camera={{ position: [0, 1.6, 5], fov: 65, near: 0.1, far: 40 }}
+                    style={{ background: "transparent" }}
+                >
+                    <fog attach="fog" args={[0x050505, 14, 32]} />
+                    <ambientLight intensity={0.3} />
+                    <Terrain />
+                    <CameraDrift />
+                </Canvas>
+            )}
+
+            {/* Static fallback for mobile + tablet — same horizon vibe, zero GPU. */}
+            {!enable3D && (
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background:
+                            "linear-gradient(to bottom, #050505 0%, #050505 60%, #0a0707 80%, #1a0a0a 100%)",
+                    }}
+                />
+            )}
 
             {/* Soft red glow at horizon */}
             <div

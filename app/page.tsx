@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import FloatingNav from "@/components/FloatingNav";
 import WorkSection from "@/components/WorkSection";
-import ExperienceJourney from "@/components/ExperienceJourney";
+import ExperienceTimeline from "@/components/ExperienceTimeline";
 import TabletFooter from "@/components/TabletFooter";
 import Cursor from "@/components/Cursor";
 import Scene from "@/components/Scene";
@@ -20,6 +20,8 @@ import ContinuityLayer from "@/components/ContinuityLayer";
 import BrandTitle from "@/components/BrandTitle";
 import AmbientTerrain from "@/components/AmbientTerrain";
 import SectionFade from "@/components/SectionFade";
+import AboutSection from "@/components/AboutSection";
+import ScrollProgress from "@/components/ScrollProgress";
 import { PROJECTS } from "@/components/WorkSection";
 import { playClick, playBrandSting } from "@/lib/audio";
 
@@ -28,7 +30,7 @@ if (typeof window !== "undefined") {
 }
 
 const BIO_TEXT =
-    "I'm Haseeb. I sit at the intersection of how things look and how they actually work. I don't believe in the handoff between design and development—I think they're the same thing. I spend my time designing the vision and then writing the code to bring it to life, ensuring nothing gets lost in translation. Whether it's a complex system or a simple interface, my goal is to build things that feel right and run flawlessly.";
+    "I'm Haseeb. I design products in Figma and ship them with code — the careful kind and the AI-assisted kind. I treat every interface as a problem worth thinking through, not a grid to fill. UX flows, design systems, and AI-powered tooling that makes design teams faster — that's the work I keep coming back to.";
 const bioWords = BIO_TEXT.split(" ");
 
 export default function Home() {
@@ -214,7 +216,7 @@ export default function Home() {
         <SmoothScroll>
             <main className="relative w-full overflow-x-clip bg-[#050505] text-white">
 
-                {/* Cinematic ambient backdrop */}
+                {/* Ambient backdrop */}
                 <div className="ambient-canvas">
                     <AmbientTerrain />
                 </div>
@@ -224,6 +226,7 @@ export default function Home() {
                 <ContinuityLayer />
 
                 {/* ── PERSISTENT HUD ──────────────────────────────────── */}
+                <Cursor />
                 <div
                     className="hud-element transition-opacity duration-500"
                     style={{
@@ -231,20 +234,22 @@ export default function Home() {
                         pointerEvents: selectedProjectId ? "none" : "auto",
                     }}
                 >
-                    <Cursor />
                     <FloatingNav />
+                    <ScrollProgress />
                 </div>
 
                 {/* ─────────────────────────────────────────────────────── */}
                 {/* ACT I — INVOCATION                                      */}
                 {/* ─────────────────────────────────────────────────────── */}
                 <section
+                    id="intro"
                     ref={heroContainerRef}
                     className="section-shell h-screen w-full"
                     style={{ zIndex: 10 }}
                 >
                     {/* Portrait */}
-                    <div className="hero-portrait absolute left-1/2 top-1/2 md:top-[40%] -translate-x-1/2 -translate-y-1/2 w-[65vw] md:w-[22vw] h-[45vh] md:h-[45vh] z-0 opacity-0 overflow-hidden">
+                    <div className="hero-portrait absolute left-1/2 top-1/2 md:top-[40%] -translate-x-1/2 -translate-y-1/2 w-[80vw] md:w-[30vw] h-[55vh] md:h-[58vh] z-0 opacity-0 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src="/portrait.png"
                             className="w-full h-full object-contain filter grayscale contrast-125"
@@ -255,12 +260,16 @@ export default function Home() {
                     {/* Bio Paragraph */}
                     <div
                         ref={bioRef}
-                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] md:w-[60vw] text-center font-sans text-xl md:text-4xl font-normal leading-snug text-white translate-y-[30vh] opacity-0 z-10 pointer-events-none"
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] md:w-[80vw] max-w-[1100px] max-h-[60vh] overflow-hidden text-center text-base md:text-2xl lg:text-[28px] font-light leading-snug text-white translate-y-[30vh] opacity-0 z-10 pointer-events-none"
+                        style={{
+                            fontFamily: '"Neue Machina", var(--font-anton), Arial, sans-serif',
+                            letterSpacing: "-0.01em",
+                        }}
                     >
                         {bioWords.map((word, i) => (
                             <span
                                 key={i}
-                                className="bio-word inline-block mr-[0.3em] mb-1 font-light will-change-[filter,opacity]"
+                                className="bio-word inline-block mr-[0.25em] mb-0.5 will-change-[filter,opacity]"
                             >
                                 {word}
                             </span>
@@ -295,9 +304,9 @@ export default function Home() {
 
                         <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 max-w-[280px] md:max-w-[400px] brutalist-decor">
                             <p className="text-xs md:text-sm leading-tight text-white/80 uppercase font-mono font-bold tracking-widest">
-                                PRODUCT DESIGNER & ENGINEER <br />
+                                PRODUCT DESIGNER · AI BUILDER <br />
                                 <span className="text-[#ff3333] mr-2">{"//"}</span>
-                                SPECIALIZING IN SPATIAL INTERFACES, DIGITAL UTILITY, AND CINEMATIC EXPERIENCES.
+                                FIGMA, DESIGN SYSTEMS, AND AI WORKFLOWS THAT ACTUALLY SHIP.
                             </p>
                         </div>
                     </div>
@@ -331,39 +340,50 @@ export default function Home() {
                     positioning inside ServicesSection. */}
                 <div className="relative z-20 text-white">
 
-                    {/* ── ACT II — TECH STACK ──────────────────────────── */}
+                    {/* ── ACT II — ABOUT ───────────────────────────────── */}
                     <SectionFade>
                         <SectionDivider
                             act="II"
+                            title="ABOUT"
+                            accent="THE DESIGNER"
+                            kicker="UI/UX, Figma-first, and an AI builder by night. Designing products and shipping the systems that scale them."
+                            variant="red"
+                        />
+                        <AboutSection />
+                    </SectionFade>
+
+                    {/* ── ACT III — TECH STACK ─────────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="III"
                             title="TECH"
                             accent="STACK"
-                            kicker="Nineteen tools across three clusters — design, adobe, AI."
-                            variant="red"
+                            kicker="The tools I reach for daily — design, frontend, and AI."
                         />
                         <TechMatrix />
                     </SectionFade>
 
-                    {/* ── ACT III — SERVICES (pinned, no fade wrapper) ──── */}
+                    {/* ── ACT IV — SERVICES (pinned, no fade wrapper) ───── */}
                     <SectionFade>
                         <SectionDivider
-                            act="III"
+                            act="IV"
                             title="SERVICES"
                             accent="OFFER"
-                            kicker="Five engagement modes. Scroll to scramble through them."
+                            kicker="Five engagement modes — from product design to AI workflows. Scroll to step through them."
+                            variant="red"
                         />
                     </SectionFade>
                     <ServicesSection />
 
-                    {/* ── ACT IV — SELECTED WORKS ──────────────────────── */}
+                    {/* ── ACT V — SELECTED WORKS ───────────────────────── */}
                     <SectionFade>
                         <SectionDivider
-                            act="IV"
+                            act="V"
                             title="SELECTED"
                             accent="WORKS"
                             kicker="A curated archive of recent work. Click any tile to enter the case."
-                            variant="red"
                         />
-                        <section className="section-shell w-full">
+                        <section id="projects" className="section-shell w-full">
                             <div className="max-w-[1600px] mx-auto px-6 md:px-10 pt-4 md:pt-8 pb-16 md:pb-24">
                                 <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-white/15 pb-3 gap-3">
                                     <BrandTitle
@@ -378,36 +398,34 @@ export default function Home() {
                                         {PROJECTS.length} CASE_FILES
                                     </span>
                                 </div>
-                                <div className="w-full overflow-x-auto pb-4">
-                                    <WorkSection onProjectOpen={handleProjectClick} />
-                                </div>
+                                <WorkSection onProjectOpen={handleProjectClick} />
                             </div>
                         </section>
                     </SectionFade>
 
-                    {/* ── ACT V — ARCHIVE ──────────────────────────────── */}
-                    <SectionFade>
-                        <SectionDivider
-                            act="V"
-                            title="EXPERIENCE"
-                            accent="ARCHIVE"
-                            kicker="Six years on the line. Tap the cover to open the volume."
-                        />
-                        <section className="relative w-full pt-4 md:pt-8 pb-16 md:pb-24 bg-[#050505]">
-                            <ExperienceJourney isFramed={false} onClose={() => {}} />
-                        </section>
-                    </SectionFade>
-
-                    {/* ── ACT VI — UPLINK ──────────────────────────────── */}
+                    {/* ── ACT VI — ARCHIVE ─────────────────────────────── */}
                     <SectionFade>
                         <SectionDivider
                             act="VI"
+                            title="EXPERIENCE"
+                            accent="ARCHIVE"
+                            kicker="A working record — design, product, and the side of the work that runs in production."
+                            variant="red"
+                        />
+                        <ExperienceTimeline />
+                    </SectionFade>
+
+                    {/* ── ACT VII — UPLINK ─────────────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="VII"
                             title="OPEN"
                             accent="UPLINK"
                             kicker="Available for new collaborations. Response within 24 hours."
-                            variant="red"
                         />
-                        <TabletFooter />
+                        <div id="contact">
+                            <TabletFooter />
+                        </div>
                     </SectionFade>
                 </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -9,7 +10,7 @@ export const PROJECTS = [
         category: "01 / Tech",
         image: "/Project Thumbnails/Cognicor.png",
         img: "/Project Thumbnails/Cognicor.png",
-        overview: "A next-generation AI platform for financial services, built with spatial UX principles and real-time data visualisation.",
+        overview: "A next-generation AI platform for financial services, built around modular UX patterns and real-time data visualisation.",
         challenge: "Translate complex institutional workflows into a frictionless conversational interface accessible to non-technical users.",
         solution: "Designed a modular AI assistant layer with contextual card stacks, inline visualisations, and a drag-based data pipeline builder.",
         tech: ["React", "Three.js", "Python", "WebSockets"],
@@ -75,16 +76,115 @@ interface WorkSectionProps {
 }
 
 export default function WorkSection({ onProjectOpen }: WorkSectionProps) {
+    const trackRef = useRef<HTMLDivElement>(null);
+    // Track drag state — used to (a) suppress click-through on the project
+    // tile if the user actually dragged, and (b) update the cursor.
+    const dragState = useRef<{
+        isDown: boolean;
+        startX: number;
+        startScroll: number;
+        moved: number;
+    }>({ isDown: false, startX: 0, startScroll: 0, moved: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+
+    const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        // Only attach drag-to-scroll for mouse / pen — let touch use native momentum.
+        if (e.pointerType === "touch") return;
+        const el = trackRef.current;
+        if (!el) return;
+        dragState.current = {
+            isDown: true,
+            startX: e.clientX,
+            startScroll: el.scrollLeft,
+            moved: 0,
+        };
+        // Don't capture the pointer on the buttons — capture on the track itself
+        // so subsequent move/up land here, not on a card that blocks them.
+        el.setPointerCapture(e.pointerId);
+        setIsDragging(true);
+    }, []);
+
+    const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        const s = dragState.current;
+        if (!s.isDown) return;
+        const el = trackRef.current;
+        if (!el) return;
+        const dx = e.clientX - s.startX;
+        s.moved = Math.max(s.moved, Math.abs(dx));
+        el.scrollLeft = s.startScroll - dx;
+    }, []);
+
+    const endDrag = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+        const s = dragState.current;
+        if (!s.isDown) return;
+        s.isDown = false;
+        const el = trackRef.current;
+        if (el) {
+            try { el.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+        }
+        // If the user dragged more than ~6px, swallow the upcoming click on
+        // whichever project tile is under the pointer so they don't open
+        // a case study just because they tried to scroll.
+        if (s.moved > 6) {
+            const swallow = (ev: MouseEvent) => {
+                ev.stopPropagation();
+                ev.preventDefault();
+            };
+            window.addEventListener("click", swallow, { capture: true, once: true });
+        }
+        setIsDragging(false);
+    }, []);
+
+    // Wheel handler: only hijack the wheel when the user clearly wants
+    // horizontal scrolling (horizontal trackpad delta or shift+wheel).
+    // Vertical wheels bubble through to Lenis for normal page scroll —
+    // so the user can keep scrolling the page even while hovering the cards.
+    useEffect(() => {
+        const el = trackRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            const absX = Math.abs(e.deltaX);
+            const absY = Math.abs(e.deltaY);
+            const horizontal = absX > absY || e.shiftKey;
+            if (!horizontal) return; // let page scroll
+            // Only swallow if there's actually somewhere to scroll horizontally.
+            const canScroll =
+                (e.deltaX > 0 || e.deltaY > 0) ? el.scrollLeft < el.scrollWidth - el.clientWidth - 1
+                : el.scrollLeft > 0;
+            if (!canScroll) return;
+            e.preventDefault();
+            e.stopPropagation();
+            el.scrollLeft += absX > absY ? e.deltaX : e.deltaY;
+        };
+        el.addEventListener("wheel", onWheel, { passive: false });
+        return () => el.removeEventListener("wheel", onWheel);
+    }, []);
+
     return (
-        <div className="flex items-stretch gap-8 md:gap-12 h-full pb-4">
-            {PROJECTS.map((project, i) => (
-                <ProjectFrame
-                    key={project.id}
-                    project={project}
-                    index={i}
-                    onOpen={() => onProjectOpen?.(project.id)}
-                />
-            ))}
+        <div
+            ref={trackRef}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
+            className="w-full overflow-x-auto overflow-y-hidden pb-4 select-none"
+            style={{
+                cursor: isDragging ? "grabbing" : "grab",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-x pan-y",
+                scrollbarWidth: "thin",
+            }}
+        >
+            <div className="flex items-stretch gap-8 md:gap-12 h-full px-1">
+                {PROJECTS.map((project, i) => (
+                    <ProjectFrame
+                        key={project.id}
+                        project={project}
+                        index={i}
+                        onOpen={() => onProjectOpen?.(project.id)}
+                    />
+                ))}
+            </div>
         </div>
     );
 }

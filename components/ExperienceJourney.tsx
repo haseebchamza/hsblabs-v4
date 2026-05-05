@@ -326,15 +326,6 @@ export default function ExperienceJourney({ isFramed = false }: ExperienceJourne
           onClick={(e) => e.stopPropagation()}
         >
           <motion.div className="relative w-[78vw] md:w-[45vw] max-w-[300px] md:max-w-[400px] h-[62vh] md:h-[68vh] max-h-[600px]">
-            {/* Base back cover (right of spread) — slimmed: no hatch and a
-                much subtler red offset so it doesn't read as a giant plate
-                around the book. */}
-            <div
-              className="absolute inset-0 border border-white/12 bg-[#0a0a0a]"
-              style={{ zIndex: -1, boxShadow: "4px 4px 0 0 rgba(255,51,51,0.55)" }}
-            >
-              <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/40 to-transparent" />
-            </div>
 
             {/* Stack of sheets */}
             {SHEETS.map((sheet, index) => {

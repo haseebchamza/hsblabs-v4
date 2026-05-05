@@ -135,6 +135,7 @@ export default function ProjectOverlay({ project, onClose }: ProjectOverlayProps
                 animate={{ opacity: phase === "done" ? 1 : 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 className="h-full overflow-y-auto pb-32"
+                data-lenis-prevent="true"
             >
                 {/* NAV */}
                 <nav className="sticky top-0 left-0 w-full p-6 md:p-10 flex justify-between items-center z-50 mix-blend-difference text-white">
@@ -157,7 +158,7 @@ export default function ProjectOverlay({ project, onClose }: ProjectOverlayProps
 
                 {/* HERO - PARALLAX FULL BLEED */}
                 <header ref={heroRef} className="relative w-full h-[90vh] overflow-hidden flex items-end md:items-center -mt-24 md:-mt-32 pt-24 md:pt-32">
-                    <motion.div style={{ y, opacity }} className="absolute inset-0">
+                    <motion.div style={{ y }} className="absolute inset-0">
                         <Image
                             src={project.img || project.image}
                             alt={project.title}

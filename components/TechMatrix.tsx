@@ -296,7 +296,10 @@ function DetailPanel({ cluster, tool }: { cluster: Cluster; tool: Tool }) {
                             className="w-8 h-8 object-contain"
                         />
                     </div>
-                    <h3 className="brand-title brand-title--mid text-white">
+                    <h3
+                        className="brand-title text-white leading-tight break-words min-w-0"
+                        style={{ fontSize: "clamp(1.25rem, 2.6vw, 2rem)" }}
+                    >
                         {tool.name.toUpperCase()}
                     </h3>
                 </div>

@@ -1,5 +1,10 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { useIsBelow } from "../lib/useViewport";
+
+/** Pixel width below which we skip the particle canvas entirely and just
+ *  render plain text. Mobile + tablet portrait fall under this. */
+const PARTICLE_BREAKPOINT = 1024;
 
 export default function ParticleText({ text = "© HBC" }: { text?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -8,9 +13,12 @@ export default function ParticleText({ text = "© HBC" }: { text?: string }) {
   // and false during SSR — avoids both hydration mismatch and the
   // React 19 "setState in effect" lint rule.
   const [mounted] = useState<boolean>(() => typeof window !== "undefined");
+  // Skip canvas entirely on mobile / tablet → plain text.
+  const isSmall = useIsBelow(PARTICLE_BREAKPOINT);
+  const useParticles = mounted && !isSmall;
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !useParticles) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -173,9 +181,29 @@ export default function ParticleText({ text = "© HBC" }: { text?: string }) {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [mounted, text]);
+  }, [mounted, useParticles, text]);
 
   if (!mounted) return <div className="w-full h-full" />;
+
+  // Mobile / tablet → static styled text, no canvas, no rAF, no listeners.
+  if (!useParticles) {
+    return (
+      <div className="w-full h-full flex items-center justify-center pointer-events-none">
+        <span
+          className="leading-none"
+          style={{
+            fontFamily: '"Neue Machina", "Arial Black", Arial, sans-serif',
+            fontWeight: 900,
+            fontSize: "inherit",
+            letterSpacing: "-0.02em",
+            color: "white",
+          }}
+        >
+          {text}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="w-full h-full flex flex-col items-center justify-center pointer-events-auto">

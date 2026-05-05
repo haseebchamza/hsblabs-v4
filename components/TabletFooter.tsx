@@ -169,10 +169,11 @@ export default function TabletFooter() {
                     <div className="flex flex-col gap-2">
                         <span className="brand-kicker text-white/40">SIGNED</span>
                         <motion.div
-                            initial={{ clipPath: "inset(0 100% 0 0)" }}
-                            whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 1.4, ease: [0.65, 0, 0.35, 1] }}
+                            initial={{ opacity: 0, x: -8 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, amount: 0.1 }}
+                            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                            className="overflow-hidden"
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -181,6 +182,7 @@ export default function TabletFooter() {
                                 className="block"
                                 style={{
                                     width: 120,
+                                    maxWidth: "100%",
                                     height: "auto",
                                     filter: "brightness(0) invert(1)",
                                     opacity: 0.85,
@@ -206,7 +208,7 @@ export default function TabletFooter() {
                         © HSBLABS_V4 {"//"} {new Date().getFullYear()} {"//"} ALL_RIGHTS_RENDERED
                     </div>
                     <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-white/45 flex items-center gap-3">
-                        <span>BUILT_WITH NEXT × GSAP × THREE</span>
+                        <span>BUILT_WITH NEXT × FIGMA × CURSOR</span>
                         <span className="text-[var(--accent-red)] brut-blink">▮</span>
                     </div>
                 </div>

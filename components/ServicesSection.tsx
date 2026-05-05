@@ -60,17 +60,18 @@ const SERVICES: Service[] = [
     },
     {
         code: "S04",
-        title: "SPATIAL",
-        accent: "INTERFACES",
+        title: "DESIGN × AI",
+        accent: "WORKFLOWS",
         summary:
-            "Web-native 3D, scrollytelling, and cinematic landing experiences — orchestrating Three.js, GSAP, and shaders to make products feel alive.",
+            "AI as a co-pilot for design teams — prompt systems, design-to-code pipelines, custom GPTs, and evals that make iteration faster without losing taste.",
         deliverables: [
-            "Hero / scrollytelling builds",
-            "Interactive 3D viewers",
-            "Shader & particle systems",
-            "WebGL performance tuning",
+            "Design-to-code pipelines",
+            "Prompt-engineered components",
+            "Custom GPTs for design ops",
+            "Eval & QA systems",
+            "Vibe-coded prototypes",
         ],
-        stack: ["Three.js", "R3F", "GLSL", "GSAP"],
+        stack: ["Cursor", "Claude", "v0", "Figma Make"],
     },
     {
         code: "S05",
@@ -119,13 +120,18 @@ export default function ServicesSection() {
 
     return (
         /* Tall scroll container — each service = 100vh of scroll room */
-        <div
+        <section
             ref={containerRef}
-            className="relative"
+            className="relative w-full"
             style={{ height: `${SERVICES.length * 100}vh` }}
         >
-            {/* Sticky cinematic viewport */}
-            <div className="sticky top-0 h-screen overflow-hidden section-shell">
+            {/* Sticky viewport — kept separate from .section-shell so the
+                isolate/overflow combo on that class can't interfere with
+                position: sticky in some browser/scroll-library combos. */}
+            <div
+                className="sticky top-0 h-screen w-full overflow-hidden"
+                style={{ backgroundColor: "rgba(5,5,5,0.92)" }}
+            >
 
                 {/* ── BACKDROP: massive outlined service number ────────── */}
                 <AnimatePresence mode="wait">
@@ -180,7 +186,7 @@ export default function ServicesSection() {
                     />
                 </div>
 
-                {/* ── MAIN CINEMATIC STAGE ──────────────────────────────── */}
+                {/* ── MAIN STAGE ───────────────────────────────────────── */}
                 <div className="absolute inset-0 flex items-center justify-center px-6 md:px-12 pt-44 md:pt-48 pb-24">
                     <div className="relative w-full max-w-[1500px] grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-12 items-center">
 
@@ -365,12 +371,12 @@ export default function ServicesSection() {
                             SCROLL ↓ TO ADVANCE
                         </span>
                         <span className="hidden md:block text-white/35">
-                            CINEMATIC_TIMELINE // ENGAGEMENT_GUIDE
+                            ENGAGEMENT_TIMELINE // SCROLL_GUIDE
                         </span>
                         <span className="text-[var(--accent-red)]">END_OF_OFFER</span>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }

@@ -14,7 +14,7 @@ const fontCaveat = Caveat({
   subsets: ["latin"],
 });
 
-// Cinematic display — used for every brand-title across the journey
+// Display face — used for every brand-title across the journey
 const fontAnton = Anton({
   variable: "--font-anton",
   weight: "400",
@@ -30,9 +30,9 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HSB LABS — Decoding Complexity Through Spatial Design",
+  title: "Haseeb Hamza — Product Designer × AI Builder",
   description:
-    "A digital laboratory by Haseeb Hamza. Architecting intuitive product systems and visual logic. Moving beyond the grid to engineer the next generation of digital utility.",
+    "Portfolio of Haseeb Hamza. Product design, design systems, and AI-powered design workflows. Figma-first, vibe coded, end-to-end.",
   icons: {
     icon: "/HSBLAB_FAV.ico",
   },

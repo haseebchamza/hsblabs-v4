@@ -1,8 +1,21 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, Center, Environment } from "@react-three/drei";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, useSyncExternalStore } from "react";
 import * as THREE from "three";
+
+/** Below this width we ship a lighter-weight Scene: smaller DPR, no HDR env,
+ *  cheaper lighting. Keeps the 3D logo on mobile (since it's brand) while
+ *  cutting GPU + bandwidth dramatically. */
+const SCENE_LIGHT_BREAKPOINT = 1024;
+
+function useIsLightScene() {
+    return useSyncExternalStore(
+        () => () => {},
+        () => typeof window !== "undefined" && window.innerWidth < SCENE_LIGHT_BREAKPOINT,
+        () => false
+    );
+}
 
 function Model({ url, scale, autoRotate = false }) {
     const pivot = useRef(null); // This is the group we rotate
@@ -149,19 +162,22 @@ export default function Scene({
     scale = 0.3,
     autoRotate = false
 }) {
+    const light = useIsLightScene();
+
     return (
         <div className={className}>
             <Canvas
                 camera={{ position: [0, 0, 5], fov: 35 }}
-                dpr={[1, 2]}
-                gl={{ antialias: true, alpha: true }}
+                dpr={light ? [1, 1.25] : [1, 2]}
+                gl={{ antialias: !light, alpha: true, powerPreference: "low-power" }}
                 style={{ pointerEvents: autoRotate ? 'none' : 'auto' }}
             >
-                <ambientLight intensity={0.5} />
+                <ambientLight intensity={light ? 0.9 : 0.5} />
                 <pointLight position={[10, 10, 10]} intensity={1.5} />
+                {!light && <pointLight position={[-6, -4, -8]} intensity={0.6} color="#ffd0d0" />}
                 <Model url="/models/pointer.glb" scale={scale} autoRotate={autoRotate} />
-                {/* Custom HDR for richer iridescent reflections on the brand logo */}
-                <Environment files="/hdri/ferndale_studio_07_1k.hdr" />
+                {/* Skip the 1MB HDR on mobile — fall back to plain lighting. */}
+                {!light && <Environment files="/hdri/ferndale_studio_07_1k.hdr" />}
             </Canvas>
         </div>
     );

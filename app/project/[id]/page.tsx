@@ -1,9 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { PROJECTS } from "../../../components/WorkSection";
 
 export default function ProjectDetail() {
@@ -13,16 +13,23 @@ export default function ProjectDetail() {
     const project = PROJECTS[currentIndex];
     const nextProject = PROJECTS[(currentIndex + 1) % PROJECTS.length];
 
-    // Controls the "folder opening" intro sequence
     const [phase, setPhase] = useState<"opening" | "fading" | "done">("opening");
+
+    const heroRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: heroRef,
+        offset: ["start start", "end start"]
+    });
+    
+    // Parallax effect for hero image
+    const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+    const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
         document.body.style.cursor = "auto";
 
-        // Phase 1: "folder open" is shown for 1.2s
         const t1 = setTimeout(() => setPhase("fading"), 1200);
-        // Phase 2: crossfade lasts 0.6s, then hide overlay
         const t2 = setTimeout(() => setPhase("done"), 1800);
 
         return () => {
@@ -35,7 +42,13 @@ export default function ProjectDetail() {
     if (!project) return <div>Project not found</div>;
 
     return (
-        <div className="relative min-h-screen bg-[#f4f1ea] text-black selection:bg-black selection:text-white overflow-hidden">
+        <div className="relative min-h-screen bg-[#0a0a0a] text-[#e8e8e8] selection:bg-white selection:text-black overflow-x-hidden font-sans">
+            
+            {/* ARCHIVAL GRAIN OVERLAY */}
+            <div
+                className="fixed inset-0 pointer-events-none z-[100] opacity-[0.04] mix-blend-overlay"
+                style={{ backgroundImage: "url('/Book textures/Paper Texture.jpg')", backgroundSize: "400px" }}
+            />
 
             {/* ── FOLDER-OPENING INTRO OVERLAY ──────────────────────────────── */}
             <AnimatePresence>
@@ -46,28 +59,25 @@ export default function ProjectDetail() {
                         animate={{ opacity: phase === "fading" ? 0 : 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.6, ease: "easeInOut" }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center bg-[#f4f1ea] pointer-events-none"
+                        className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0a0a0a] pointer-events-none"
                     >
-                        {/* Folder graphic */}
                         <div className="relative flex flex-col items-center select-none scale-75 md:scale-100">
-
                             {/* Folder tab */}
                             <motion.div
                                 initial={{ y: 0 }}
                                 animate={{ y: phase === "fading" ? -8 : 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="w-32 h-8 bg-[#e0dbcf] rounded-t-lg border border-black/10 self-start ml-6"
+                                className="w-32 h-8 bg-[#1a1a1a] rounded-t-lg border border-white/10 self-start ml-6"
                             />
 
-                            {/* Folder body - the "cover" lifts open */}
                             <div className="relative w-[240px] h-[180px]">
-                                {/* Back of folder (always visible) */}
+                                {/* Back of folder */}
                                 <div
-                                    className="absolute inset-0 rounded-sm bg-[#d9d3c4] border border-black/10"
-                                    style={{ boxShadow: "0 10px 40px rgba(0,0,0,0.12)" }}
+                                    className="absolute inset-0 rounded-sm bg-[#111] border border-white/10"
+                                    style={{ boxShadow: "0 10px 40px rgba(0,0,0,0.5)" }}
                                 />
 
-                                {/* Front cover - rotates open around the top edge */}
+                                {/* Front cover */}
                                 <motion.div
                                     initial={{ rotateX: 0, transformOrigin: "top center" }}
                                     animate={{
@@ -75,38 +85,35 @@ export default function ProjectDetail() {
                                         transformOrigin: "top center",
                                     }}
                                     transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-                                    className="absolute inset-0 rounded-sm bg-[#e8e3d8] border border-black/10 flex items-center justify-center"
-                                    style={{ transformOrigin: "top center" }}
+                                    className="absolute inset-0 rounded-sm bg-[#1a1a1a] border border-white/10 flex items-center justify-center backdrop-blur-md"
                                 >
-                                    {/* Project name on cover */}
-                                    <div className="flex flex-col items-center gap-2 opacity-60">
-                                        <span className="text-[8px] uppercase tracking-[0.4em] font-bold text-black/40">
+                                    <div className="flex flex-col items-center gap-2 opacity-80">
+                                        <span className="text-[8px] uppercase tracking-[0.4em] font-mono text-white/50">
                                             {project.category}
                                         </span>
-                                        <span className="text-xl font-black uppercase tracking-tighter text-black/70">
+                                        <span className="text-xl font-black uppercase tracking-tighter text-white">
                                             {project.title}
                                         </span>
                                     </div>
-                                    {/* Paper lines on folder */}
                                     <div className="absolute bottom-4 left-6 right-6 flex flex-col gap-1.5 opacity-20">
                                         {[...Array(4)].map((_, i) => (
-                                            <div key={i} className="h-px bg-black" />
+                                            <div key={i} className="h-px bg-white" />
                                         ))}
                                     </div>
                                 </motion.div>
 
-                                {/* Sheets inside folder - appear as cover opens */}
+                                {/* Sheets inside folder */}
                                 <motion.div
                                     initial={{ opacity: 0, y: 4 }}
                                     animate={{ opacity: phase === "fading" ? 1 : 0, y: phase === "fading" ? 0 : 4 }}
                                     transition={{ duration: 0.3, delay: 0.25 }}
-                                    className="absolute inset-x-2 top-2 bottom-0 bg-white/80 rounded-sm border border-black/5"
+                                    className="absolute inset-x-2 top-2 bottom-0 bg-[#222] rounded-sm border border-white/10 shadow-lg"
                                 />
                                 <motion.div
                                     initial={{ opacity: 0, y: 8 }}
                                     animate={{ opacity: phase === "fading" ? 0.6 : 0, y: phase === "fading" ? 4 : 8 }}
                                     transition={{ duration: 0.3, delay: 0.15 }}
-                                    className="absolute inset-x-4 top-4 bottom-0 bg-white/50 rounded-sm border border-black/5"
+                                    className="absolute inset-x-4 top-4 bottom-0 bg-[#333] rounded-sm border border-white/5 shadow-lg"
                                 />
                             </div>
 
@@ -115,9 +122,9 @@ export default function ProjectDetail() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: [0, 1, 0] }}
                                 transition={{ duration: 1.2, times: [0, 0.3, 1] }}
-                                className="mt-6 text-[9px] uppercase tracking-[0.5em] font-bold text-black/30"
+                                className="mt-6 text-[9px] uppercase tracking-[0.5em] font-mono text-[#00c878]"
                             >
-                                Opening file…
+                                Decrypting dossier...
                             </motion.p>
                         </div>
                     </motion.div>
@@ -129,174 +136,211 @@ export default function ProjectDetail() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: phase === "done" ? 1 : 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className="min-h-screen pb-32"
+                className="pb-32"
             >
-                {/* ARCHIVAL GRAIN OVERLAY */}
-                <div
-                    className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03]"
-                    style={{ backgroundImage: "url('/Book textures/Paper Texture.jpg')", backgroundSize: "400px" }}
-                />
-
                 {/* NAV */}
-                <nav className="fixed top-0 left-0 w-full p-6 md:p-10 flex justify-between items-center z-50 mix-blend-multiply">
+                <nav className="fixed top-0 left-0 w-full p-6 md:p-10 flex justify-between items-center z-50 mix-blend-difference text-white">
                     <Link
                         href="/"
-                        className="group flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] font-bold"
+                        className="group flex items-center gap-4 text-[10px] uppercase tracking-[0.4em] font-mono"
                     >
-                        <span className="w-8 h-8 rounded-full border border-black/20 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-500">
+                        <span className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
                             ←
                         </span>
-                        <span className="hidden sm:inline">Back to Workbench</span>
+                        <span className="hidden sm:inline">Back to System</span>
                         <span className="sm:hidden">Back</span>
                     </Link>
                     <div className="hidden md:block">
-                        <span className="text-[10px] uppercase tracking-[0.4em] font-bold opacity-30">
+                        <span className="text-[10px] uppercase tracking-[0.4em] font-mono opacity-50">
                             Registry Vol. 25-04
                         </span>
                     </div>
                 </nav>
 
-                {/* HERO */}
-                <header className="relative w-full h-[55vh] md:h-[80vh] overflow-hidden pt-24 md:pt-28 px-4 md:px-10">
-                    <motion.div
-                        initial={{ y: 40, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.1, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative w-full h-full rounded-xl md:rounded-2xl overflow-hidden shadow-2xl"
-                    >
+                {/* HERO - PARALLAX FULL BLEED */}
+                <header ref={heroRef} className="relative w-full h-[90vh] overflow-hidden flex items-end md:items-center">
+                    <motion.div style={{ y, opacity }} className="absolute inset-0">
                         <Image
                             src={project.img}
                             alt={project.title}
                             fill
                             priority
-                            className="object-cover"
+                            className="object-cover opacity-60"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                        <div className="absolute bottom-6 left-6 md:bottom-14 md:left-14">
-                            <motion.h1
-                                initial={{ x: -16, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{ delay: 0.25, duration: 0.7 }}
-                                className="text-3xl md:text-6xl font-black uppercase tracking-tight leading-none text-white drop-shadow-xl"
-                            >
-                                {project.title}
-                            </motion.h1>
-                            <div className="mt-3 flex gap-3">
-                                <span className="px-4 py-1.5 border border-white/30 rounded-full text-[9px] md:text-[10px] uppercase font-bold text-white/80 backdrop-blur-md">
-                                    {project.category}
-                                </span>
-                            </div>
-                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
                     </motion.div>
+
+                    <div className="relative z-10 w-full px-6 md:px-10 pb-12 md:pb-0">
+                        <motion.div
+                            initial={{ y: 40, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.25, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            <span className="px-4 py-1.5 border border-white/20 rounded-full text-[9px] md:text-[10px] uppercase font-mono tracking-widest text-white/80 backdrop-blur-md mb-6 inline-block">
+                                {project.category}
+                            </span>
+                            <h1 className="text-[12vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.85] text-white drop-shadow-2xl mix-blend-overlay">
+                                {project.title}
+                            </h1>
+                        </motion.div>
+                    </div>
                 </header>
 
                 {/* CONTENT GRID */}
-                <section className="max-w-[1400px] mx-auto mt-12 md:mt-20 px-6 md:px-10">
-                    <div className="flex flex-col md:flex-row gap-12 md:gap-20">
+                <section className="max-w-[1400px] mx-auto mt-24 md:mt-32 px-6 md:px-10">
+                    <div className="flex flex-col md:flex-row gap-16 md:gap-24">
 
                         {/* LEFT: Sticky Metadata */}
-                        <aside className="md:w-1/3 md:sticky md:top-32 h-fit flex flex-col gap-8 md:gap-10">
-                            <div className="flex flex-col gap-2 border-l-2 border-black/5 pl-6 md:pl-8">
-                                <span className="text-[10px] uppercase tracking-[0.2em] font-black opacity-30">Role</span>
-                                <p className="text-lg md:text-xl font-bold uppercase leading-none">Design Engineer</p>
-                            </div>
-                            <div className="flex flex-col gap-2 border-l-2 border-black/5 pl-6 md:pl-8">
-                                <span className="text-[10px] uppercase tracking-[0.2em] font-black opacity-30">Stack</span>
-                                <div className="flex flex-wrap gap-2">
+                        <aside className="md:w-1/3 md:sticky md:top-32 h-fit flex flex-col gap-10 md:gap-14">
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6 }}
+                                className="flex flex-col gap-3 border-l-[3px] border-[#00c878]/50 pl-6 md:pl-8 group hover:border-[#00c878] transition-colors"
+                            >
+                                <span className="text-[10px] uppercase tracking-[0.3em] font-mono opacity-40 group-hover:opacity-100 transition-opacity">Role</span>
+                                <p className="text-xl md:text-2xl font-bold uppercase tracking-tight text-white/90">Design Engineer</p>
+                            </motion.div>
+
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                className="flex flex-col gap-3 border-l-[3px] border-white/10 pl-6 md:pl-8 group hover:border-white/40 transition-colors"
+                            >
+                                <span className="text-[10px] uppercase tracking-[0.3em] font-mono opacity-40 group-hover:opacity-100 transition-opacity">Stack</span>
+                                <div className="flex flex-wrap gap-2 mt-2">
                                     {(project as any).tech?.map((t: string) => (
-                                        <span key={t} className="px-3 py-1 bg-black/5 rounded text-[10px] md:text-[11px] font-bold uppercase">{t}</span>
+                                        <span key={t} className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] md:text-[11px] font-mono uppercase tracking-wider text-white/80 hover:bg-white/10 transition-colors">{t}</span>
                                     ))}
                                 </div>
-                            </div>
-                            <div className="flex flex-col gap-2 border-l-2 border-black/5 pl-6 md:pl-8">
-                                <span className="text-[10px] uppercase tracking-[0.2em] font-black opacity-30">Metrics</span>
-                                <div className="grid grid-cols-2 gap-4 md:gap-6">
-                                    {Object.entries((project as any).stats || {}).map(([key, val]) => (
+                            </motion.div>
+
+                            <motion.div 
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.2 }}
+                                className="flex flex-col gap-3 border-l-[3px] border-white/10 pl-6 md:pl-8 group hover:border-white/40 transition-colors"
+                            >
+                                <span className="text-[10px] uppercase tracking-[0.3em] font-mono opacity-40 group-hover:opacity-100 transition-opacity">Metrics</span>
+                                <div className="grid grid-cols-2 gap-6 mt-2">
+                                    {Object.entries((project as any).stats || {}).map(([key, val], i) => (
                                         <div key={key}>
-                                            <p className="text-xl md:text-2xl font-black">{val as string}</p>
-                                            <p className="text-[8px] md:text-[9px] uppercase font-bold opacity-40">{key.replace(/_/g, ' ')}</p>
+                                            <p className="text-3xl md:text-4xl font-black tracking-tighter text-white">{val as string}</p>
+                                            <p className="text-[8px] md:text-[9px] uppercase tracking-widest font-mono opacity-50 mt-1">{key.replace(/_/g, ' ')}</p>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
+                            </motion.div>
                         </aside>
 
                         {/* RIGHT: Narrative */}
-                        <div className="md:w-2/3 flex flex-col gap-16 md:gap-24">
-                            <article>
-                                <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-6 md:mb-8">
-                                    Concept &amp; Execution
+                        <div className="md:w-2/3 flex flex-col gap-20 md:gap-32">
+                            <motion.article
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8 }}
+                            >
+                                <h2 className="text-[10px] font-mono uppercase tracking-[0.4em] text-[#00c878] mb-6">
+                                    // 01. Concept & Execution
                                 </h2>
-                                <p className="text-lg md:text-3xl leading-snug text-black/80 font-medium">
+                                <p className="text-xl md:text-4xl leading-tight text-white/90 font-medium tracking-tight">
                                     {(project as any).overview}
                                 </p>
-                            </article>
+                            </motion.article>
 
                             {/* CHALLENGE */}
-                            <div className="flex flex-col md:flex-row gap-6 md:gap-10 border-t border-black/10 pt-12 md:pt-16">
-                                <h3 className="md:w-1/3 text-[9px] md:text-[10px] uppercase font-black tracking-[0.4em] text-black/30 shrink-0">
-                                    The Challenge
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col md:flex-row gap-6 md:gap-12 border-t border-white/10 pt-12 md:pt-16 group"
+                            >
+                                <h3 className="md:w-1/3 text-[10px] uppercase font-mono tracking-[0.4em] text-white/30 group-hover:text-white/60 transition-colors shrink-0">
+                                    // 02. The Challenge
                                 </h3>
-                                <p className="md:w-2/3 text-lg md:text-2xl font-bold leading-snug">
+                                <p className="md:w-2/3 text-lg md:text-2xl text-white/70 leading-relaxed font-medium">
                                     {(project as any).challenge}
                                 </p>
-                            </div>
+                            </motion.div>
 
                             {/* STRATEGY */}
-                            <div className="flex flex-col md:flex-row gap-6 md:gap-10 border-t border-black/10 pt-12 md:pt-16">
-                                <h3 className="md:w-1/3 text-[9px] md:text-[10px] uppercase font-black tracking-[0.4em] text-[#00c878] shrink-0">
-                                    The Strategy
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8 }}
+                                className="flex flex-col md:flex-row gap-6 md:gap-12 border-t border-white/10 pt-12 md:pt-16 group"
+                            >
+                                <h3 className="md:w-1/3 text-[10px] uppercase font-mono tracking-[0.4em] text-[#00c878] shrink-0">
+                                    // 03. The Strategy
                                 </h3>
-                                <p className="md:w-2/3 text-lg md:text-2xl font-bold leading-snug">
+                                <p className="md:w-2/3 text-lg md:text-2xl text-white/90 leading-relaxed font-medium">
                                     {(project as any).solution}
                                 </p>
-                            </div>
+                            </motion.div>
 
                             {/* BEHANCE LINK */}
                             {(project as any).behance && (
-                                <div className="mt-4 md:mt-8">
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5 }}
+                                    className="mt-8"
+                                >
                                     <a 
                                         href={(project as any).behance} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 px-6 md:px-8 py-3.5 md:py-4 bg-black text-white font-bold uppercase tracking-widest text-[12px] md:text-sm rounded-full hover:scale-105 transition-transform"
+                                        className="group relative inline-flex items-center gap-4 px-8 py-5 bg-white text-black font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs rounded-full overflow-hidden"
                                     >
-                                        View Full Case Study on Behance
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <span className="relative z-10 group-hover:text-white transition-colors duration-500">View Case Study</span>
+                                        <svg className="relative z-10 group-hover:text-white transition-colors duration-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <line x1="5" y1="12" x2="19" y2="12"></line>
                                             <polyline points="12 5 19 12 12 19"></polyline>
                                         </svg>
+                                        <div className="absolute inset-0 bg-[#00c878] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]" />
                                     </a>
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     </div>
                 </section>
 
                 {/* CYBER HUD DECORATION */}
-                <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 pointer-events-none opacity-20 hidden sm:block">
-                    <p className="text-[9px] md:text-[10px] font-mono whitespace-pre text-black text-right">
-                        {`POS_X: 124.5\nPOS_Y: -80.2\nZOOM_LVL: 1.25\nREND_STAT: OPTIMIZED`}
+                <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 pointer-events-none opacity-30 hidden sm:block mix-blend-difference">
+                    <p className="text-[9px] md:text-[10px] font-mono whitespace-pre text-white text-right leading-relaxed">
+                        {`SYS_ID: ${project.id.toUpperCase()}\nREND_STAT: OPTIMIZED\nENC_LVL: ALPHA`}
                     </p>
                 </div>
 
-                {/* FOOTER */}
-                <footer className="mt-24 md:mt-40 border-t border-black/5 py-16 md:py-20 px-6 md:px-10 text-center flex flex-col items-center">
+                {/* FOOTER - NEXT PROJECT */}
+                <footer className="mt-32 md:mt-48 pt-20 pb-10 px-4 border-t border-white/5 relative overflow-hidden flex flex-col items-center group">
+                    <div className="absolute inset-0 bg-white/[0.02] translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none" />
+                    
                     <Link
                         href={`/project/${nextProject.id}`}
-                        className="text-4xl md:text-[10vw] font-black uppercase tracking-tighter text-black/10 hover:text-black transition-colors duration-500 leading-none"
+                        className="relative z-10 w-full text-center flex flex-col items-center"
                     >
-                        Next_Project
+                        <p className="text-[9px] md:text-[10px] font-mono uppercase tracking-[0.5em] text-[#00c878] mb-6">
+                            Continue Sequence
+                        </p>
+                        <h2 className="text-[12vw] md:text-[10vw] font-black uppercase tracking-tighter leading-[0.8] text-white/10 group-hover:text-white transition-colors duration-700">
+                            {nextProject.title}
+                        </h2>
                     </Link>
-                    <p className="mt-4 text-[9px] md:text-[10px] uppercase tracking-[0.5em] font-bold opacity-30">
-                        Continue to {nextProject.title}
-                    </p>
+
                     <Link
                         href="/"
-                        className="mt-12 px-6 py-2.5 border border-black/10 rounded-full text-[8px] md:text-[9px] uppercase font-bold tracking-widest hover:bg-black hover:text-white transition-colors"
+                        className="relative z-10 mt-20 px-6 py-3 border border-white/20 rounded-full text-[9px] uppercase font-mono tracking-widest text-white/50 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
                     >
-                        Return to Home
+                        Return to System
                     </Link>
                 </footer>
             </motion.main>

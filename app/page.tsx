@@ -1,283 +1,422 @@
 "use client";
-// Triggering fresh build with TS suppression
-import React, { useRef, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useRef, useState, useEffect, useLayoutEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import gsap from "gsap";
-import { useRouter } from "next/navigation";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import FloatingNav from "@/components/FloatingNav";
 import WorkSection from "@/components/WorkSection";
 import ExperienceJourney from "@/components/ExperienceJourney";
-import DeskClutter from "@/components/DeskClutter";
-import Footer from "@/components/Footer";
+import TabletFooter from "@/components/TabletFooter";
 import Cursor from "@/components/Cursor";
-import Preloader from "@/components/Preloader";
 import Scene from "@/components/Scene";
-import CinematicReveal from "@/components/CinematicReveal";
+import SmoothScroll from "@/components/SmoothScroll";
+import ProjectOverlay from "@/components/ProjectOverlay";
+import ParticleText from "@/components/ParticleText";
+import SectionDivider from "@/components/SectionDivider";
+import TechMatrix from "@/components/TechMatrix";
+import ServicesSection from "@/components/ServicesSection";
+import ContinuityLayer from "@/components/ContinuityLayer";
+import BrandTitle from "@/components/BrandTitle";
+import AmbientTerrain from "@/components/AmbientTerrain";
+import SectionFade from "@/components/SectionFade";
+import { PROJECTS } from "@/components/WorkSection";
+import { playClick, playBrandSting } from "@/lib/audio";
+
+if (typeof window !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger);
+}
+
+const BIO_TEXT =
+    "I'm Haseeb. I sit at the intersection of how things look and how they actually work. I don't believe in the handoff between design and development—I think they're the same thing. I spend my time designing the vision and then writing the code to bring it to life, ensuring nothing gets lost in translation. Whether it's a complex system or a simple interface, my goal is to build things that feel right and run flawlessly.";
+const bioWords = BIO_TEXT.split(" ");
 
 export default function Home() {
-    const panX = useRef<number>(0);
-    const panY = useRef<number>(0);
-    const panningRef = useRef<HTMLDivElement>(null);
-    const worldRef = useRef<HTMLDivElement>(null);
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
-    const [isMounted, setIsMounted] = useState(false);
-    const [showNudge, setShowNudge] = useState(false);
-    const nudgeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+    const selectedProject = PROJECTS.find((p) => p.id === selectedProjectId);
 
-    // Dynamic horizontal spread to avoid overlap on mobile
-    const [spread, setSpread] = useState(80); // Default vh/vw units
-    const [sceneScale, setSceneScale] = useState(0.7);
+    // Refs for animation
+    const heroContainerRef = useRef<HTMLDivElement>(null);
+    const hRef = useRef<HTMLDivElement>(null);
+    const sIntroRef = useRef<HTMLDivElement>(null);
+    const bRef = useRef<HTMLDivElement>(null);
+    const typographyLayerRef = useRef<HTMLDivElement>(null);
+    const bioRef = useRef<HTMLDivElement>(null);
+
+    // Brutalist HUD state — just the timestamp shown in the hero corner
+    const [timeStr, setTimeStr] = useState("00:00:00");
 
     useEffect(() => {
-        setIsMounted(true);
-        const handleResize = () => {
-            // Increase spread on mobile to prevent projects/about from bleeding into hero
-            const isMobile = window.innerWidth < 768;
-            setSpread(isMobile ? 140 : 80);
-            setSceneScale(isMobile ? 0.6 : 0.7);
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const interval = setInterval(() => {
+            setTimeStr(new Date().toISOString());
+        }, 100);
+        return () => clearInterval(interval);
     }, []);
 
-    // Establish initial GSAP transform (rotateX tilt) after mount
+    // ── BRAND AUDIO — sting on first gesture, click on every interactive ───
     useEffect(() => {
-        if (!isMounted || !panningRef.current) return;
-        gsap.set(panningRef.current, { rotateX: 12, x: 0, y: 0 });
-    }, [isMounted]);
-
-    // Detect scroll attempts to nudge the user to DRAG instead
-    useEffect(() => {
-        const handleScrollAttempt = () => {
-            setShowNudge(true);
-            if (nudgeTimeoutRef.current) clearTimeout(nudgeTimeoutRef.current);
-            nudgeTimeoutRef.current = setTimeout(() => setShowNudge(false), 1200);
+        const onFirstGesture = () => {
+            playBrandSting();
+            window.removeEventListener("scroll", onFirstGesture);
+            window.removeEventListener("pointerdown", onFirstGesture);
         };
-        window.addEventListener("wheel", handleScrollAttempt, { passive: true });
-        window.addEventListener("touchmove", handleScrollAttempt, { passive: true });
+        window.addEventListener("scroll", onFirstGesture, { passive: true, once: true });
+        window.addEventListener("pointerdown", onFirstGesture, { once: true });
+
+        const onClick = (e: MouseEvent) => {
+            const t = e.target as HTMLElement | null;
+            if (!t) return;
+            const interactive = t.closest("a, button, [role='button']");
+            if (!interactive) return;
+            // Skip the audio-toggle button itself so it doesn't click-on-mute-toggle
+            if (interactive.closest("[data-no-click-sound]")) return;
+            playClick();
+        };
+        document.addEventListener("click", onClick, true);
+
         return () => {
-            window.removeEventListener("wheel", handleScrollAttempt);
-            window.removeEventListener("touchmove", handleScrollAttempt);
+            window.removeEventListener("scroll", onFirstGesture);
+            window.removeEventListener("pointerdown", onFirstGesture);
+            document.removeEventListener("click", onClick, true);
         };
     }, []);
 
-    // Nav camera panning via GSAP (animates the panningRef)
-    useEffect(() => {
-        const handlePan = (e: Event) => {
-            window.dispatchEvent(new CustomEvent('cancelCinematicReveal'));
-            const id = (e as CustomEvent).detail.id as string;
-            
-            // Re-calculate landmarks based on current spread
-            const LANDMARKS: Record<string, { x: number; y: number }> = {
-                intro: { x: 0, y: 0 },
-                projects: { x: spread, y: 0 },
-                about: { x: -spread, y: 0 },
-            };
+    useLayoutEffect(() => {
+        // Wire Lenis into GSAP ScrollTrigger for the hero's pinned sequence.
+        // We do this inline so SmoothScroll stays simple.
+        type LenisLike = {
+            on: (event: string, cb: (...args: unknown[]) => void) => void;
+            off: (event: string, cb: (...args: unknown[]) => void) => void;
+            raf: (time: number) => void;
+        };
+        const lenis = (window as unknown as { __lenis?: LenisLike }).__lenis;
+        let rafCb: ((t: number) => void) | null = null;
+        if (lenis) {
+            lenis.on("scroll", ScrollTrigger.update);
+            rafCb = (t: number) => lenis.raf(t * 1000);
+            gsap.ticker.add(rafCb);
+            gsap.ticker.lagSmoothing(0);
+        }
 
-            const target = LANDMARKS[id];
-            if (!panningRef.current || !target) return;
+        const ctx = gsap.context(() => {
+            // ─── ACT I — HERO ENTRANCE ─────────────────────────────────
+            const hEl = hRef.current;
+            const bEl = bRef.current;
+            const sIntro = sIntroRef.current;
 
-            panX.current = target.x * (window.innerWidth / 100);
-            panY.current = target.y * (window.innerHeight / 100);
+            if (hEl && bEl && sIntro) {
+                gsap.set(hEl, { x: -25, y: "-50%", opacity: 0 });
+                gsap.set(sIntro, { x: 0, y: "-50%", opacity: 0 });
+                gsap.set(bEl, { x: 25, y: "-50%", opacity: 0 });
 
-            gsap.to(panningRef.current, {
-                x: panX.current,
-                y: panY.current,
-                rotateX: 12,
-                duration: 1.8,
-                ease: "expo.inOut",
+                gsap.set(".hero-portrait", { opacity: 0, scale: 0.95 });
+                gsap.set(".hero-title", { opacity: 0, y: 20 });
+
+                const introTl = gsap.timeline({ delay: 0.5 });
+
+                introTl.to([hEl, sIntro, bEl], {
+                    opacity: 1,
+                    duration: 1.5,
+                    ease: "power2.out",
+                });
+
+                const paddingX = window.innerWidth < 768 ? 40 : 100;
+                const edgeDist = window.innerWidth / 2 - paddingX;
+
+                introTl.to(hEl, { x: -edgeDist, duration: 1.8, ease: "power4.inOut" }, "+=0.5");
+                introTl.to(bEl, { x: edgeDist, duration: 1.8, ease: "power4.inOut" }, "<");
+                introTl.to(sIntro, { opacity: 0, scale: 0.5, duration: 1, ease: "power2.inOut" }, "<0.2");
+
+                introTl.to(".hero-portrait", { opacity: 0.8, scale: 1, duration: 2, ease: "power2.out" }, "-=0.5");
+                introTl.to(".hero-title", { opacity: 1, y: 0, duration: 1.5, ease: "power3.out", stagger: 0.1 }, "<0.2");
+                introTl.to(".brutalist-decor", { opacity: 1, duration: 1 }, "<");
+            }
+
+            // ─── ACT I — HERO PINNED SCROLL SEQUENCE ───────────────────
+            gsap.set(".bio-word", { opacity: 0, filter: "blur(10px)" });
+
+            const scrollTl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: heroContainerRef.current,
+                    start: "top top",
+                    end: "+=200%", // 2× viewport — snappier than the previous 3000px
+                    scrub: 1,
+                    pin: true,
+                    pinSpacing: true,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                },
             });
-        };
 
-        window.addEventListener("panToLandmark", handlePan);
-        return () => window.removeEventListener("panToLandmark", handlePan);
-    }, [spread]);
+            scrollTl.to(typographyLayerRef.current, {
+                y: "-100vh",
+                duration: 2,
+                ease: "power2.inOut",
+            });
 
-    // Native priority listener for Hero button to bypass global drag
-    const heroBtnRef = useRef<HTMLButtonElement>(null);
-    useEffect(() => {
-        const btn = heroBtnRef.current;
-        if (!btn) return;
-        const onDown = (e: PointerEvent) => {
-            e.stopPropagation();
-            window.dispatchEvent(new CustomEvent('triggerCinematicReveal'));
-        };
-        btn.addEventListener('pointerdown', onDown);
-        return () => btn.removeEventListener('pointerdown', onDown);
-    }, [isMounted]);
+            scrollTl.to(".hero-portrait", {
+                scale: 0.6,
+                duration: 2,
+                ease: "power2.inOut",
+            }, "<");
 
-    // Pure pointer-drag with boundary clamping
-    useEffect(() => {
-        if (!isMounted) return;
-        const world = worldRef.current;
-        if (!world) return;
+            scrollTl.to(bioRef.current, {
+                y: 0,
+                opacity: 1,
+                duration: 2,
+                ease: "power3.out",
+            }, "-=0.8");
 
-        const MAX_X = window.innerWidth * 1.5; // Increased for mobile spread
-        const MAX_Y = window.innerHeight * 0.4;
+            scrollTl.to(".bio-word", {
+                opacity: 1,
+                filter: "blur(0px)",
+                duration: 4,
+                stagger: 0.08,
+                ease: "power1.out",
+            });
 
-        let startX = 0, startY = 0;
-        let originX = 0, originY = 0;
-        let isDragging = false;
+            // Fade portrait before pin releases
+            scrollTl.to(".hero-portrait", {
+                opacity: 0,
+                duration: 1,
+                ease: "power2.in",
+            }, "-=2");
 
-        const onPointerDown = (e: PointerEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.closest('button') || target.closest('a') || target.closest('[data-interactive]')) return;
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            originX = panX.current;
-            originY = panY.current;
-            world.style.cursor = 'grabbing';
-        };
+            // Fade bio out before pin releases so it doesn't bleed into next section
+            scrollTl.to(bioRef.current, {
+                opacity: 0,
+                duration: 1,
+                ease: "power2.in",
+            });
 
-        const onPointerMove = (e: PointerEvent) => {
-            if (!isDragging || !panningRef.current) return;
-            e.preventDefault();
-            
-            // Increase sensitivity for touch devices for a snappier feel
-            const multiplier = e.pointerType === 'touch' ? 1.6 : 1;
-            
-            const rawX = originX + (e.clientX - startX) * multiplier;
-            const rawY = originY + (e.clientY - startY) * multiplier;
-            
-            panX.current = Math.max(-MAX_X, Math.min(MAX_X, rawX));
-            panY.current = Math.max(-MAX_Y, Math.min(MAX_Y, rawY));
-            gsap.set(panningRef.current, { x: panX.current, y: panY.current, rotateX: 12 });
-        };
+            scrollTl.to({}, { duration: 0.5 });
 
-        const onPointerUp = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            world.style.cursor = 'grab';
-        };
-
-        world.addEventListener('pointerdown', onPointerDown);
-        document.addEventListener('pointermove', onPointerMove, { passive: false });
-        document.addEventListener('pointerup', onPointerUp);
-        document.addEventListener('pointercancel', onPointerUp);
+            // Section title pop-ins (Selected Works heading, etc.) handled per-component
+        }, heroContainerRef);
 
         return () => {
-            world.removeEventListener('pointerdown', onPointerDown);
-            document.removeEventListener('pointermove', onPointerMove);
-            document.removeEventListener('pointerup', onPointerUp);
-            document.removeEventListener('pointercancel', onPointerUp);
-        };
-    }, [isMounted]);
-
-    // Handle Cinematic Reveal Fade & Ascend
-    useEffect(() => {
-        const handleCinematic = () => {
-            gsap.to(worldRef.current, { y: typeof window !== 'undefined' ? window.innerHeight : 1000, opacity: 0, duration: 2, ease: "power3.inOut" });
-            gsap.to(".custom-cursor", { opacity: 0, duration: 0.5 });
-            if (worldRef.current) worldRef.current.style.pointerEvents = 'none';
-        };
-
-        const handleCancelCinematic = () => {
-            gsap.to(worldRef.current, { y: 0, opacity: 1, duration: 2, ease: "power3.inOut" });
-            gsap.to(".custom-cursor", { opacity: 1, duration: 0.5 });
-            if (worldRef.current) worldRef.current.style.pointerEvents = 'auto';
-        };
-
-        window.addEventListener('triggerCinematicReveal', handleCinematic);
-        window.addEventListener('cancelCinematicReveal', handleCancelCinematic);
-
-        return () => {
-            window.removeEventListener('triggerCinematicReveal', handleCinematic);
-            window.removeEventListener('cancelCinematicReveal', handleCancelCinematic);
+            ctx.revert();
+            if (rafCb) gsap.ticker.remove(rafCb);
+            const l = (window as unknown as { __lenis?: LenisLike }).__lenis;
+            if (l && rafCb) l.off("scroll", ScrollTrigger.update);
         };
     }, []);
 
     const handleProjectClick = (projectId: string) => {
-        if (!panningRef.current) return;
-        const tl = gsap.timeline({ onComplete: () => router.push(`/project/${projectId}`) });
-        tl.to(panningRef.current, { opacity: 0, duration: 0.8, ease: "power2.inOut" });
-        tl.to(".transition-overlay", { opacity: 1, duration: 0.6, ease: "power2.inOut" }, "-=0.2");
+        setSelectedProjectId(projectId);
     };
 
-    if (!isMounted) return null;
+    const handleCloseProject = () => {
+        setSelectedProjectId(null);
+    };
 
     return (
-        <main className="fixed inset-0 bg-[#e8e8e8] text-black overflow-hidden select-none" style={{ perspective: "2000px" }}>
-            <CinematicReveal />
-            <AnimatePresence>
-                {isLoading && (
-                    <div className="fixed inset-0 z-[2000]">
-                        <Preloader onComplete={() => setIsLoading(false)} />
+        <SmoothScroll>
+            <main className="relative w-full overflow-x-clip bg-[#050505] text-white">
+
+                {/* Cinematic ambient backdrop */}
+                <div className="ambient-canvas">
+                    <AmbientTerrain />
+                </div>
+
+                {/* Persistent edge decorations: left coordinate rail, right red
+                    tick column, corner ticks, top-right UTC clock. */}
+                <ContinuityLayer />
+
+                {/* ── PERSISTENT HUD ──────────────────────────────────── */}
+                <div
+                    className="hud-element transition-opacity duration-500"
+                    style={{
+                        opacity: selectedProjectId ? 0 : 1,
+                        pointerEvents: selectedProjectId ? "none" : "auto",
+                    }}
+                >
+                    <Cursor />
+                    <FloatingNav />
+                </div>
+
+                {/* ─────────────────────────────────────────────────────── */}
+                {/* ACT I — INVOCATION                                      */}
+                {/* ─────────────────────────────────────────────────────── */}
+                <section
+                    ref={heroContainerRef}
+                    className="section-shell h-screen w-full"
+                    style={{ zIndex: 10 }}
+                >
+                    {/* Portrait */}
+                    <div className="hero-portrait absolute left-1/2 top-1/2 md:top-[40%] -translate-x-1/2 -translate-y-1/2 w-[65vw] md:w-[22vw] h-[45vh] md:h-[45vh] z-0 opacity-0 overflow-hidden">
+                        <img
+                            src="/portrait.png"
+                            className="w-full h-full object-contain filter grayscale contrast-125"
+                            alt="Haseeb Hamza Portrait"
+                        />
                     </div>
-                )}
-            </AnimatePresence>
 
-            <div className="transition-overlay fixed inset-0 bg-white z-[1500] opacity-0 pointer-events-none" />
-
-            <div className="hud-element">
-                <Cursor />
-                <FloatingNav />
-            </div>
-
-            <div className="fixed inset-[-10vw] z-[100] pointer-events-none" style={{ backdropFilter: 'blur(10px)', maskImage: 'radial-gradient(circle at center, transparent 35%, black 85%)', WebkitMaskImage: 'radial-gradient(circle at center, transparent 35%, black 85%)' }} />
-
-            <div ref={worldRef} className="absolute inset-0 w-full h-full cursor-grab z-[200]" style={{ touchAction: "none" }}>
-                <div ref={panningRef} className="absolute inset-0 w-full h-full flex items-center justify-center" style={{ transformStyle: "preserve-3d", willChange: "transform" }}>
-                    <div className="absolute pointer-events-none" style={{ inset: "-5000px", backgroundImage: `linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
-                    <div className="absolute inset-0 pointer-events-none z-[1]">
-                        <DeskClutter />
+                    {/* Bio Paragraph */}
+                    <div
+                        ref={bioRef}
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] md:w-[60vw] text-center font-sans text-xl md:text-4xl font-normal leading-snug text-white translate-y-[30vh] opacity-0 z-10 pointer-events-none"
+                    >
+                        {bioWords.map((word, i) => (
+                            <span
+                                key={i}
+                                className="bio-word inline-block mr-[0.3em] mb-1 font-light will-change-[filter,opacity]"
+                            >
+                                {word}
+                            </span>
+                        ))}
                     </div>
 
-                    {/* ══ HERO SECTION ══ */}
-                    <section id="intro" className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-                        <motion.div data-interactive initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: "circOut" }} className="flex flex-col items-center text-center pointer-events-auto">
-                            <span className="text-black/40 font-mono text-[10px] uppercase tracking-[0.6em] mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.05)]">Hi there, I&apos;m</span>
-                            <h1 className="text-[12vw] md:text-[8vw] font-black tracking-[-0.05em] uppercase leading-[0.8] flex items-center gap-2 md:gap-4 drop-shadow-[0_10px_30px_rgba(0,0,0,0.1)] text-[#1a1a1a]">
-                                H
-                                <div className="w-[9vw] h-[9vw] md:w-[7vw] md:h-[7vw] relative mx-[-1vw]">
-                                    <Scene scale={sceneScale} />
+                    <div ref={typographyLayerRef} className="absolute inset-0 z-30 pointer-events-none">
+                        <div
+                            className="absolute inset-0 mix-blend-difference flex flex-col justify-center items-center text-white tracking-[-2px] leading-none uppercase"
+                            style={{ fontFamily: '"Neue Machina", "Arial Black", Arial, sans-serif', fontWeight: 900 }}
+                        >
+                            {/* Line 1 */}
+                            <div className="hero-title flex items-center justify-center gap-x-2 md:gap-x-4 transform -translate-x-4 md:-translate-x-12 opacity-0 w-full h-[110px] md:h-[170px]">
+                                <span className="text-4xl md:text-[5.5vw]">I</span>
+                                <div className="w-[160px] md:w-[460px] h-full flex items-center justify-center">
+                                    <ParticleText text="DESIGN" />
                                 </div>
-                                SEEB
-                            </h1>
-                            <p className="mt-6 text-black/50 text-[10px] font-mono uppercase tracking-[0.5em] drop-shadow-[0_2px_10px_rgba(0,0,0,0.05)]">SYSTEMS ARCHITECT &amp; PRODUCT DESIGNER</p>
-
-                            <motion.button ref={heroBtnRef} whileHover={{ y: -2, rotate: -2 }} whileTap={{ y: 2 }} animate={{ rotate: -1.5 }} data-interactive="true" className="mt-12 group relative px-8 py-3 bg-black text-white font-mono text-[12px] uppercase tracking-[0.4em] transition-all duration-300 pointer-events-auto shadow-[0_4px_0_0_#333] hover:shadow-[0_6px_0_0_#333] active:shadow-none active:translate-y-[4px]">
-                                <span className="relative z-10">CONTACT ME</span>
-                                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                            </motion.button>
-
-                            {/* DRAG HINT (Nudge on scroll attempt) */}
-                            <motion.div className={`mt-12 font-mono text-[8px] uppercase tracking-[0.4em] transition-all duration-500 ${showNudge ? 'text-black scale-110 opacity-100' : 'text-black/30 opacity-60'}`}>
-                                [ DRAG TO NAVIGATE ]
-                            </motion.div>
-
-                            {/* PLUGIN/WIDGET STICKERS - Positioned above HASEEB */}
-                            <div className="absolute -top-20 left-1/2 -translate-x-1/2 flex gap-12 pointer-events-none w-max">
-                                <div className="pointer-events-auto">
-                                    <a href="https://www.figma.com/community/plugin/1574496757447320798/themeseed?q_id=c43ada91-b6e7-4404-b09d-11d580ee3a44" target="_blank" rel="noopener noreferrer">
-                                        <motion.img src="/themeseed.png" alt="Themeseed" className="w-14 md:w-20 h-auto drop-shadow-lg rotate-[-12deg] hover:scale-110 transition-transform" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.5 }} />
-                                    </a>
+                                <span className="text-4xl md:text-[5.5vw]">& CODE</span>
+                            </div>
+                            {/* Line 2 */}
+                            <div className="hero-title flex items-center justify-center opacity-0 mt-0 text-4xl md:text-[5.5vw] whitespace-nowrap">
+                                <span>FROM LOGIC TO</span>
+                            </div>
+                            {/* Line 3 — with the 3D pointer mark next to INTERFACE. */}
+                            <div className="hero-title transform translate-x-2 md:translate-x-8 opacity-0 mt-0 flex items-center justify-center gap-x-3 md:gap-x-4 text-4xl md:text-[5.5vw] whitespace-nowrap">
+                                <div className="w-[80px] md:w-[140px] h-[80px] md:h-[140px] relative flex items-center justify-center overflow-visible">
+                                    <Scene className="w-full h-full relative" scale={0.5} autoRotate={false} />
                                 </div>
-                                <div className="pointer-events-auto">
-                                    <a href="https://www.figma.com/community/widget/1464673927630363022/bingo?q_id=1e6e29c4-195f-451d-9a03-9c541455be54" target="_blank" rel="noopener noreferrer">
-                                        <motion.img src="/Bingo.png" alt="Bingo" className="w-14 md:w-20 h-auto drop-shadow-lg rotate-[15deg] hover:scale-110 transition-transform" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.7 }} />
-                                    </a>
+                                <span>INTERFACE.</span>
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 max-w-[280px] md:max-w-[400px] brutalist-decor">
+                            <p className="text-xs md:text-sm leading-tight text-white/80 uppercase font-mono font-bold tracking-widest">
+                                PRODUCT DESIGNER & ENGINEER <br />
+                                <span className="text-[#ff3333] mr-2">{"//"}</span>
+                                SPECIALIZING IN SPATIAL INTERFACES, DIGITAL UTILITY, AND CINEMATIC EXPERIENCES.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* H S B Letters */}
+                    <div className="absolute inset-0 z-40 pointer-events-none mix-blend-difference text-white">
+                        <div ref={hRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform">H</div>
+                        <div ref={sIntroRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform -translate-x-1/2">S</div>
+                        <div ref={bRef} className="absolute left-1/2 top-1/2 font-mono text-base md:text-xl font-black will-change-transform">B</div>
+                    </div>
+
+                    <div className="brutalist-decor opacity-0 font-mono text-[9px] md:text-[11px] text-white/60 uppercase font-bold tracking-widest z-40 pointer-events-none">
+                        <div className="absolute top-8 left-8 md:top-12 md:left-12 flex flex-col gap-1">
+                            <span className="text-[#ff3333]">SYS.STATUS: ONLINE</span>
+                            <span>{timeStr}</span>
+                        </div>
+                        <div className="absolute top-8 right-8 md:top-12 md:right-12 text-right flex flex-col gap-1">
+                            <span>COORD: 25.2048° N, 55.2708° E</span>
+                            <span>CPU_UTIL: 14.8% // MEM: 244MB</span>
+                        </div>
+                        <div className="absolute bottom-8 right-8 md:bottom-12 md:right-12 text-right flex flex-col gap-1">
+                            <span className="text-[#ff3333]">REND_PASS: 0x0A4F</span>
+                            <span>UX_ENGINE: V4.0</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Stage container — transparent so AmbientTerrain shows
+                    through. Each child section uses its own .section-shell.
+                    Must NOT have overflow:hidden or it would break sticky
+                    positioning inside ServicesSection. */}
+                <div className="relative z-20 text-white">
+
+                    {/* ── ACT II — TECH STACK ──────────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="II"
+                            title="TECH"
+                            accent="STACK"
+                            kicker="Nineteen tools across three clusters — design, adobe, AI."
+                            variant="red"
+                        />
+                        <TechMatrix />
+                    </SectionFade>
+
+                    {/* ── ACT III — SERVICES (pinned, no fade wrapper) ──── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="III"
+                            title="SERVICES"
+                            accent="OFFER"
+                            kicker="Five engagement modes. Scroll to scramble through them."
+                        />
+                    </SectionFade>
+                    <ServicesSection />
+
+                    {/* ── ACT IV — SELECTED WORKS ──────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="IV"
+                            title="SELECTED"
+                            accent="WORKS"
+                            kicker="A curated archive of recent work. Click any tile to enter the case."
+                            variant="red"
+                        />
+                        <section className="section-shell w-full">
+                            <div className="max-w-[1600px] mx-auto px-6 md:px-10 pt-4 md:pt-8 pb-16 md:pb-24">
+                                <div className="flex flex-col md:flex-row justify-between items-end mb-10 border-b border-white/15 pb-3 gap-3">
+                                    <BrandTitle
+                                        kicker="VOL. 2024 — 2026"
+                                        primary="INDEX"
+                                        accent="0001"
+                                        accentFilled
+                                        size="large"
+                                        inline
+                                    />
+                                    <span className="font-mono text-[10px] md:text-xs text-white/55 uppercase tracking-[0.4em] mt-4 md:mt-0">
+                                        {PROJECTS.length} CASE_FILES
+                                    </span>
+                                </div>
+                                <div className="w-full overflow-x-auto pb-4">
+                                    <WorkSection onProjectOpen={handleProjectClick} />
                                 </div>
                             </div>
-                        </motion.div>
-                    </section>
+                        </section>
+                    </SectionFade>
 
-                    <div id="projects" className="absolute w-screen h-screen flex items-center justify-center z-20" style={{ left: `-${spread}vw` }}>
-                        <WorkSection onProjectOpen={handleProjectClick} />
-                    </div>
+                    {/* ── ACT V — ARCHIVE ──────────────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="V"
+                            title="EXPERIENCE"
+                            accent="ARCHIVE"
+                            kicker="Six years on the line. Tap the cover to open the volume."
+                        />
+                        <section className="relative w-full pt-4 md:pt-8 pb-16 md:pb-24 bg-[#050505]">
+                            <ExperienceJourney isFramed={false} onClose={() => {}} />
+                        </section>
+                    </SectionFade>
 
-                    <section id="about" className="absolute w-screen h-screen flex items-center justify-center z-20" style={{ left: `${spread}vw` }}>
-                        <ExperienceJourney />
-                    </section>
-
-                    <div className="absolute top-[80vh] w-screen flex items-center justify-center z-10">
-                        <Footer />
-                    </div>
+                    {/* ── ACT VI — UPLINK ──────────────────────────────── */}
+                    <SectionFade>
+                        <SectionDivider
+                            act="VI"
+                            title="OPEN"
+                            accent="UPLINK"
+                            kicker="Available for new collaborations. Response within 24 hours."
+                            variant="red"
+                        />
+                        <TabletFooter />
+                    </SectionFade>
                 </div>
-            </div>
-        </main>
+
+                <AnimatePresence>
+                    {selectedProject && (
+                        <ProjectOverlay project={selectedProject} onClose={handleCloseProject} />
+                    )}
+                </AnimatePresence>
+            </main>
+        </SmoothScroll>
     );
 }

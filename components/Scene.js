@@ -1,29 +1,21 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, Center } from "@react-three/drei";
-import { useMemo, useRef, Component } from "react";
+import { useGLTF, Center, Environment } from "@react-three/drei";
+import { useMemo, useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 
-// Simple fallback
-function CursorFallback() {
-    return (
-        <div className="w-full h-full flex items-center justify-center opacity-20">
-            <div className="w-12 h-12 border-2 border-black rotate-45" />
-        </div>
-    );
-}
-
-class WebGLBoundary extends Component {
-    state = { crashed: false };
-    static getDerivedStateFromError() { return { crashed: true }; }
-    render() { return this.state.crashed ? <CursorFallback /> : this.props.children; }
-}
-
-function Model({ url, scale }) {
-    const mesh = useRef();
+function Model({ url, scale, autoRotate = false }) {
+    const pivot = useRef(null); // This is the group we rotate
     const { scene } = useGLTF(url);
+    
+    // State for drag rotation
+    const [isDragging, setIsDragging] = useState(false);
+    const lastMouseX = useRef(0);
+    const rotationVelocity = useRef(0);
+    const targetRotation = useRef(0);
 
     const cloned = useMemo(() => {
+        if (!scene) return null;
         const c = scene.clone();
         c.traverse((child) => {
             if (child.isMesh) {
@@ -31,43 +23,146 @@ function Model({ url, scale }) {
                     color: 0xffffff,
                     metalness: 0.9,
                     roughness: 0.1,
-                    clearcoat: 1.0,
-                    clearcoatRoughness: 0.1,
+                    transmission: 0.5,
+                    thickness: 1.0,
+                    iridescence: 1.0,
+                    iridescenceIOR: 1.5,
                 });
             }
         });
         return c;
     }, [scene]);
 
+    useEffect(() => {
+        if (autoRotate) return;
+
+        const handleMouseDown = (e) => {
+            setIsDragging(true);
+            lastMouseX.current = e.clientX;
+        };
+
+        const handleMouseMove = (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - lastMouseX.current;
+            lastMouseX.current = e.clientX;
+            rotationVelocity.current = deltaX * 0.01;
+        };
+
+        const handleMouseUp = () => setIsDragging(false);
+
+        window.addEventListener("mousedown", handleMouseDown);
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+        
+        const handleTouchStart = (e) => {
+            setIsDragging(true);
+            lastMouseX.current = e.touches[0].clientX;
+        };
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            const deltaX = e.touches[0].clientX - lastMouseX.current;
+            lastMouseX.current = e.touches[0].clientX;
+            rotationVelocity.current = deltaX * 0.01;
+        };
+        const handleTouchEnd = () => setIsDragging(false);
+
+        window.addEventListener("touchstart", handleTouchStart);
+        window.addEventListener("touchmove", handleTouchMove);
+        window.addEventListener("touchend", handleTouchEnd);
+
+        return () => {
+            window.removeEventListener("mousedown", handleMouseDown);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("touchstart", handleTouchStart);
+            window.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("touchend", handleTouchEnd);
+        };
+    }, [isDragging, autoRotate]);
+
     useFrame((state, delta) => {
-        if (!mesh.current) return;
-        mesh.current.rotation.y += delta * 0.8;
+        if (!pivot.current) return;
+
+        if (autoRotate) {
+            pivot.current.rotation.y += delta * 1.5;
+            pivot.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.1;
+            return;
+        }
+
+        // ── DRAG-DRIVEN ROTATION (preserves user-set drag UX) ───────────
+        targetRotation.current += rotationVelocity.current;
+        pivot.current.rotation.y = THREE.MathUtils.lerp(
+            pivot.current.rotation.y,
+            targetRotation.current,
+            0.1
+        );
+
+        if (!isDragging) {
+            rotationVelocity.current *= 0.95;
+        } else {
+            rotationVelocity.current *= 0.8;
+        }
+
+        // ── AMBIENT IDLE MOTION ────────────────────────────────────────
+        // When the user isn't dragging and there's no residual velocity,
+        // apply gentle sway/bob so the cursor breathes on its own.
+        // Cuts off the moment the user grabs and drags it.
+        const t = state.clock.getElapsedTime();
+        const idleAmount = isDragging ? 0 : Math.min(1, 1 - Math.min(1, Math.abs(rotationVelocity.current) * 30));
+
+        // Subtle pitch + roll, scaled by idleAmount so drags take over cleanly
+        const idleX = Math.sin(t * 0.4 + 1.2) * 0.10 * idleAmount;
+        const idleZ = Math.cos(t * 0.3) * 0.06 * idleAmount;
+        pivot.current.rotation.x = THREE.MathUtils.lerp(pivot.current.rotation.x, idleX, 0.05);
+        pivot.current.rotation.z = THREE.MathUtils.lerp(pivot.current.rotation.z, idleZ, 0.05);
+
+        // Soft vertical bob via position
+        const bobTarget = Math.sin(t * 0.7) * 0.06 * idleAmount;
+        pivot.current.position.y = THREE.MathUtils.lerp(pivot.current.position.y, bobTarget, 0.06);
     });
 
+    if (!cloned) return null;
+
     return (
-        <group ref={mesh}>
-            <Center><primitive object={cloned} scale={scale} position={[0, -0.15, 0]} /></Center>
+        <group ref={pivot}>
+            <Center>
+                {/* 
+                  * ADJUST AXIS HERE:
+                  * The pivot group is at [0,0,0]. 
+                  * The 'Center' component puts the model's geometric center at [0,0,0].
+                  * Change the position [x, y, z] below to offset the model RELATIVE to the pivot.
+                  * e.g. [0, 0, -0.2] moves the model back, making the axis appear in front.
+                  * e.g. [0, 0, 0.2] moves the model forward, making the axis appear behind.
+                */}
+                <primitive 
+                    object={cloned} 
+                    scale={scale} 
+                    position={[0, 0, 0]} 
+                />
+            </Center>
         </group>
     );
 }
 
 export default function Scene({
-    className = "absolute inset-0 z-10 pointer-events-none flex items-center justify-center",
-    scale = 0.3
+    className = "absolute inset-0 z-10 flex items-center justify-center",
+    scale = 0.3,
+    autoRotate = false
 }) {
     return (
-        <div className={className} style={{ pointerEvents: 'none' }}>
-            <WebGLBoundary>
-                <Canvas
-                    camera={{ position: [0, 0, 5], fov: 35 }}
-                    dpr={[1, 2]}
-                    gl={{ antialias: true, alpha: true }}
-                >
-                    <ambientLight intensity={0.8} />
-                    <pointLight position={[5, 10, 5]} intensity={20} />
-                    <Model url="/models/pointer.glb" scale={scale} />
-                </Canvas>
-            </WebGLBoundary>
+        <div className={className}>
+            <Canvas
+                camera={{ position: [0, 0, 5], fov: 35 }}
+                dpr={[1, 2]}
+                gl={{ antialias: true, alpha: true }}
+                style={{ pointerEvents: autoRotate ? 'none' : 'auto' }}
+            >
+                <ambientLight intensity={0.5} />
+                <pointLight position={[10, 10, 10]} intensity={1.5} />
+                <Model url="/models/pointer.glb" scale={scale} autoRotate={autoRotate} />
+                {/* Custom HDR for richer iridescent reflections on the brand logo */}
+                <Environment files="/hdri/ferndale_studio_07_1k.hdr" />
+            </Canvas>
         </div>
     );
 }

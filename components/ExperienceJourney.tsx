@@ -2,89 +2,109 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import BrandTitle from "./BrandTitle";
 
 // ── CONTENT DATA ──────────────────────────────────────────────────────────────
 
 const ABOUT_BIO =
-  "Visual & Product Designer with 6+ years of experience crafting user-centered digital solutions across real estate, fintech, and SaaS. Known for blending data-driven UX with strong visual execution - and increasingly, building my own tools using AI. Comfortable owning design end-to-end, from strategy to shipping.";
+  "Visual & Product Designer with 6+ years of experience crafting user-centered digital solutions across real estate, fintech, and SaaS. Known for blending data-driven UX with strong visual execution — and increasingly, building my own tools using AI. Comfortable owning design end-to-end, from strategy to shipping.";
 
 const JOBS = [
   {
     company: "Provident Real Estate",
     role: "UI/UX Designer",
-    period: "Apr 2025 – Present",
+    period: "Apr 2025 — Present",
     points: [
-      "Data-Driven Landing Page Design: Leveraged Hotjar heatmaps, session recordings, and user behaviour insights alongside real market data to design and optimize high-converting landing pages - achieving ~30% improvement in conversion rates.",
-      "Multi-Platform Digital Design: Designed end-to-end web experiences across Provident's ecosystem including off-plan property pages, developer profiles, area guides, and roadshow pages - ensuring brand consistency.",
-      "Real Estate Market-Informed UX: Translated real market insights and property data into intuitive, visually compelling layouts that effectively communicate off-plan developments.",
-      "AI-Accelerated Design Workflow: Utilized Figma Make and other AI design tools to speed up production and iterate rapidly on campaign assets.",
+      "Data-Driven Landing Page Design — leveraged Hotjar heatmaps, session recordings, and user behaviour insights alongside real market data to design and optimize high-converting landing pages, achieving ~30% improvement in conversion rates.",
+      "Multi-Platform Digital Design — designed end-to-end web experiences across Provident's ecosystem including off-plan property pages, developer profiles, area guides, and roadshow pages, ensuring brand consistency.",
+      "Real Estate Market-Informed UX — translated real market insights and property data into intuitive, visually compelling layouts that effectively communicate off-plan developments.",
+      "AI-Accelerated Workflow — utilized Figma Make and other AI design tools to speed up production and iterate rapidly on campaign assets.",
     ],
   },
   {
     company: "Union Square House",
     role: "Visual Designer",
-    period: "Mar 2025 – Present",
+    period: "Mar 2025 — Present",
     points: [
-      "UI/UX Design for Real Estate Campaigns: Directed the creation of responsive landing pages for luxury real estate projects, ensuring high engagement and seamless user experience.",
-      "Marketing-Focused Visual Content Creation: Designed a wide range of digital assets including social media posts, reels, and paid ad creatives tailored for performance marketing.",
-      "Cross-Functional Collaboration & Execution: Worked closely with marketing, sales, and branding teams to ensure visual consistency and alignment.",
-      "Performance-Driven Design Outcomes: Contributed to lead generation success through optimized landing page designs that improved conversion rates.",
-      "Creative Support for High-Value Deals: Delivered impactful visuals and marketing collateral for major property deals.",
+      "UI/UX Design for Real Estate Campaigns — directed the creation of responsive landing pages for luxury real estate projects, ensuring high engagement and seamless user experience.",
+      "Marketing-Focused Visual Content Creation — designed a wide range of digital assets including social media posts, reels, and paid ad creatives tailored for performance marketing.",
+      "Cross-Functional Collaboration — worked closely with marketing, sales, and branding teams to ensure visual consistency and alignment.",
+      "Performance-Driven Outcomes — contributed to lead generation success through optimized landing page designs that improved conversion rates.",
+      "Creative Support for High-Value Deals — delivered impactful visuals and marketing collateral for major property deals.",
     ],
   },
   {
     company: "Aqary International Holding",
     role: "Product Designer",
-    period: "Dec 2023 – Jan 2025",
+    period: "Dec 2023 — Jan 2025",
     points: [
-      "Strategic Digital Product Design & Leadership: Directed the design of key in-house digital products including websites, mobile apps, and the Aqary dashboard.",
-      "Collaborative Cross-Functional Design Execution: Partnered effectively with diverse teams to maintain design consistency and achieve project goals.",
-      "Complex Design Problem Solving & Innovation: Resolved intricate design challenges related to complex dashboards and websites.",
-      "Award-Winning User-Centered Design: Prioritized intuitive designs, earning \u2018Designer of the Month\u2019 recognition for outstanding contributions.",
-      "Stakeholder-Driven Design Approval: Managed stakeholder communication, design evaluation, and maintained high-quality standards.",
+      "Strategic Digital Product Design & Leadership — directed the design of key in-house digital products including websites, mobile apps, and the Aqary dashboard.",
+      "Collaborative Cross-Functional Execution — partnered effectively with diverse teams to maintain design consistency and achieve project goals.",
+      "Complex Design Problem Solving — resolved intricate design challenges related to complex dashboards and websites.",
+      "Award-Winning User-Centered Design — earned 'Designer of the Month' recognition for outstanding contributions.",
+      "Stakeholder Management — managed stakeholder communication, design evaluation, and maintained high-quality standards.",
     ],
   },
   {
     company: "StratAgile",
     role: "Creative Designer",
-    period: "Dec 2020 – Nov 2023",
+    period: "Dec 2020 — Nov 2023",
     points: [
-      "Multichannel Digital Asset Design: Conceptualized and delivered engaging digital assets (websites, mobile apps, videos) to enhance user experience across diverse platforms.",
-      "Strategic Creative Design Leadership: Directed creative design processes for high-profile projects, ensuring alignment with client branding objectives.",
-      "Business Development through Design Innovation: Secured major contracts with Codashop (Malaysia, Philippines) demonstrating persuasive presentation capabilities.",
-      "Cross-Functional Strategy Implementation: Collaborated with teams to execute design strategies that supported marketing campaigns and business goals.",
-      "Efficient Design Execution & Delivery: Delivered high-quality designs within tight deadlines, consistently exceeding client expectations.",
+      "Multichannel Digital Asset Design — conceptualized and delivered engaging digital assets across diverse platforms.",
+      "Strategic Creative Leadership — directed creative design processes for high-profile projects, ensuring alignment with client branding objectives.",
+      "Business Development through Design — secured major contracts with Codashop (Malaysia, Philippines) demonstrating persuasive presentation capabilities.",
+      "Cross-Functional Strategy Implementation — collaborated with teams to execute design strategies that supported marketing campaigns.",
+      "Efficient Design Execution — delivered high-quality designs within tight deadlines, consistently exceeding client expectations.",
     ],
   },
   {
-    company: "Freelance Designer",
+    company: "Freelance",
     role: "Creative Director",
-    period: "Dec 2019 – 2020",
+    period: "Dec 2019 — 2020",
     points: [
-      "Website & App Design: Created intuitive and visually appealing website and app designs.",
-      "Digital & Print Media: Developed digital assets, company profiles, logos, posters, banners, and design patterns.",
-      "Conceptualization & Execution: Conceptualized visually compelling design ideas aligning with client goals and brand identity.",
-      "User-Centric Design: Understood product specifications and user psychology to enhance user experience.",
-      "Client Communication: Effectively communicated with clients, incorporating feedback for successful project outcomes.",
+      "Website & App Design — created intuitive and visually appealing website and app designs.",
+      "Digital & Print Media — developed digital assets, company profiles, logos, posters, banners, and design patterns.",
+      "Conceptualization & Execution — conceptualized visually compelling design ideas aligning with client goals and brand identity.",
+      "User-Centric Approach — understood product specifications and user psychology to enhance user experience.",
+      "Client Communication — effectively communicated with clients, incorporating feedback for successful project outcomes.",
     ],
   },
 ];
 
-// ── SHARED STYLE ──────────────────────────────────────────────────────────────
-const PAPER_BG = {
-  backgroundImage: "url('/Book textures/Paper Texture.jpg')",
-  backgroundSize: "cover",
-  backgroundColor: "#ede7da",
+// ── BRUTALIST PAGE STYLES ─────────────────────────────────────────────────────
+const PAGE_BG: React.CSSProperties = {
+  background: "#0a0a0a",
+  backgroundImage:
+    "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
+  backgroundSize: "40px 40px",
 };
 
 // ── SUB-COMPONENTS ────────────────────────────────────────────────────────────
 
-function RuledLines() {
+function Scanlines() {
+  return <div className="absolute inset-0 pointer-events-none brut-scanlines opacity-90" />;
+}
+
+function PageHeader({ tag, code }: { tag: string; code: string }) {
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.05]">
-      {Array.from({ length: 30 }, (_, i) => (
-        <div key={i} className="border-b border-black" style={{ height: 24 }} />
-      ))}
+    <div className="flex items-center justify-between px-5 md:px-7 py-2 border-b border-white/15 bg-[#050505]">
+      <span className="font-mono text-[8px] md:text-[9px] uppercase tracking-[0.35em] text-[var(--accent-red)]">
+        {tag}
+      </span>
+      <span className="font-mono text-[8px] md:text-[9px] uppercase tracking-[0.35em] text-white/50">
+        {code}
+      </span>
+    </div>
+  );
+}
+
+function PageFooter({ left, right }: { left: string; right?: string }) {
+  return (
+    <div className="flex items-center justify-between px-5 md:px-7 py-2 border-t border-white/15 bg-[#050505] mt-auto">
+      <span className="font-mono text-[8px] uppercase tracking-[0.35em] text-white/40">{left}</span>
+      <span className="font-mono text-[8px] uppercase tracking-[0.35em] text-[var(--accent-red)]">
+        {right || "▮"}
+      </span>
     </div>
   );
 }
@@ -93,222 +113,233 @@ function RuledLines() {
 
 function PagePhoto() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6 overflow-hidden relative">
-      <RuledLines />
-      <div className="relative z-10 flex flex-col items-center gap-3">
-        {/* Photo polaroid */}
-        <div className="relative bg-white p-2 md:p-3 shadow-xl -rotate-2 border border-black/5 w-[140px] md:w-[180px] h-[180px] md:h-[220px]">
-          <div className="relative w-full bg-black overflow-hidden shadow-inner" style={{ height: "82%" }}>
-            <Image src="/Banner image.png" alt="Haseeb Hamza" fill className="object-cover grayscale contrast-110" />
-            <div className="absolute inset-0 bg-yellow-400/10 mix-blend-overlay" />
+    <div className="w-full h-full flex flex-col relative" style={PAGE_BG}>
+      <Scanlines />
+      <PageHeader tag="ID_CARD" code="DOSSIER 0001" />
+      <div className="relative z-10 flex-1 flex items-center justify-center p-5">
+        {/* Brutalist ID frame */}
+        <div className="relative w-[150px] md:w-[180px]">
+          <div className="border border-[var(--accent-red)] bg-[#050505] p-2 brut-hardshadow">
+            <div className="relative w-full aspect-[4/5] bg-[#111] overflow-hidden brut-scanlines">
+              <Image src="/portrait.png" alt="Haseeb Hamza" fill className="object-cover grayscale contrast-125" />
+              <div className="absolute inset-0 bg-[var(--accent-red)] mix-blend-multiply opacity-20" />
+              {/* Corner ticks */}
+              <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-[var(--accent-red)]" />
+              <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-[var(--accent-red)]" />
+              <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-[var(--accent-red)]" />
+              <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-[var(--accent-red)]" />
+            </div>
+            <div className="mt-2 text-center font-mono text-[8px] uppercase tracking-[0.4em] text-white/70">
+              HASEEB HAMZA
+            </div>
+            <div className="text-center font-mono text-[7px] uppercase tracking-[0.45em] text-[var(--accent-red)] mt-0.5">
+              SUBJECT_ID 0001
+            </div>
           </div>
-          <div className="flex items-center justify-center font-mono text-[9px] md:text-xs italic text-black/40 tracking-widest uppercase font-bold" style={{ height: "18%" }}>
-            Haseeb Hamza
-          </div>
-          {/* Tape */}
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 md:w-12 h-4 md:h-6 bg-amber-100/70 -rotate-3 opacity-80" />
         </div>
       </div>
+      <PageFooter left="REGISTRY VOL_01" right="VERIFIED" />
     </div>
   );
 }
 
 function PageBio() {
   return (
-    <div className="w-full h-full flex flex-col p-5 md:p-8 overflow-hidden relative justify-center">
-      <RuledLines />
-      <div className="relative z-10 flex flex-col gap-3 md:gap-4 max-w-[240px] md:max-w-[260px]">
-        <div className="border-b border-black/10 pb-2 mb-1">
-          <span className="text-[7px] font-mono uppercase tracking-[0.4em] text-black/25">ABOUT ME</span>
-        </div>
-        <h3 className="font-caveat text-lg md:text-xl font-black text-black/80 italic leading-tight">
-          Hi, I&apos;m Haseeb Hamza.
+    <div className="w-full h-full flex flex-col relative" style={PAGE_BG}>
+      <Scanlines />
+      <PageHeader tag="BIO_DOSSIER" code="0002" />
+      <div className="relative z-10 flex-1 flex flex-col gap-3 px-5 md:px-7 py-5 overflow-hidden">
+        <h3 className="font-black text-2xl md:text-[1.7rem] uppercase tracking-tighter leading-[0.95] text-white">
+          ABOUT THE<br />
+          <span className="text-[var(--accent-red)]">SUBJECT</span>
         </h3>
-        <p className="font-caveat text-[12px] md:text-[14px] text-black/60 leading-relaxed italic">{ABOUT_BIO}</p>
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {["UI/UX", "Product Design", "Visual Design", "Figma", "AI Tools", "Real Estate"].map(t => (
-            <span key={t} className="px-2 py-0.5 bg-black/5 rounded text-[7px] md:text-[8px] font-mono uppercase text-black/40 tracking-wider border border-black/5">
+        <p className="font-mono text-[10px] md:text-[11px] text-white/65 leading-relaxed">{ABOUT_BIO}</p>
+        <div className="flex flex-wrap gap-1.5 mt-1">
+          {["UI/UX", "PRODUCT", "VISUAL", "FIGMA", "AI_TOOLS", "REAL_ESTATE"].map((t) => (
+            <span
+              key={t}
+              className="px-1.5 py-0.5 border border-white/20 font-mono text-[8px] uppercase tracking-[0.3em] text-white/65"
+            >
               {t}
             </span>
           ))}
         </div>
       </div>
+      <PageFooter left="STATUS: ACTIVE" right="● LIVE" />
     </div>
   );
 }
 
-function PageJob({ job }: { job: typeof JOBS[0] }) {
+function PageJob({ job, index }: { job: typeof JOBS[0]; index: number }) {
+  const code = String(index + 1).padStart(4, "0");
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden relative">
-      <RuledLines />
-      <div className="relative z-10 flex flex-col h-full">
-        {/* Header */}
-        <div className="px-5 md:px-8 pt-5 md:pt-6 pb-2 md:pb-3 border-b border-black/10 shrink-0">
-          <span className="text-[7px] font-mono uppercase tracking-[0.4em] text-black/25">{job.period}</span>
-          <h3 className="font-caveat text-[clamp(1.1rem,4vw,1.6rem)] font-black text-black/85 italic leading-tight mt-0.5">
-            {job.company}
-          </h3>
-          <p className="font-caveat text-[10px] md:text-[11px] text-black/45 font-bold uppercase tracking-wide">- {job.role}</p>
-        </div>
-        {/* Bullets */}
-        <div className="flex-1 overflow-y-auto px-5 md:px-8 py-3 md:py-4" style={{ scrollbarWidth: "none" }}>
-          <ul className="space-y-2 md:space-y-3">
-            {job.points.map((pt, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="w-1 h-1 rounded-full bg-black/30 mt-[6px] shrink-0" />
-                <p className="font-caveat text-[11px] md:text-[13px] text-black/60 italic leading-snug">{pt}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <div className="w-full h-full flex flex-col relative" style={PAGE_BG}>
+      <Scanlines />
+      <PageHeader tag="JOB_RECORD" code={code} />
+      <div className="px-5 md:px-7 pt-4 pb-2 border-b border-white/10 shrink-0 relative z-10">
+        <span className="font-mono text-[8px] uppercase tracking-[0.4em] text-[var(--accent-red)]">
+          {job.period}
+        </span>
+        <h3 className="font-black uppercase tracking-tighter leading-[0.9] text-xl md:text-[1.5rem] text-white mt-1">
+          {job.company}
+        </h3>
+        <p className="font-mono text-[9px] md:text-[10px] uppercase tracking-[0.35em] text-white/55 mt-0.5">
+          ROLE / {job.role}
+        </p>
       </div>
+      <div
+        className="relative z-10 flex-1 overflow-y-auto px-5 md:px-7 py-3"
+        style={{ scrollbarWidth: "none" }}
+      >
+        <ul className="space-y-2">
+          {job.points.map((pt, i) => (
+            <li key={i} className="flex items-start gap-2.5">
+              <span className="font-mono text-[9px] tracking-[0.3em] text-[var(--accent-red)] pt-[2px] shrink-0">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p className="font-mono text-[9.5px] md:text-[10.5px] text-white/65 leading-snug">{pt}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <PageFooter left={`ENTRIES // ${job.points.length}`} right="● ARCHIVED" />
     </div>
   );
 }
 
 function PageCta() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 md:p-8 relative overflow-hidden">
-      <RuledLines />
-      <div className="absolute top-0 w-full h-2 bg-black/5" />
-      <div className="absolute bottom-0 w-full h-2 bg-black/5" />
-      
-      <div className="relative z-10 flex flex-col items-center gap-3 md:gap-4">
-        <span className="text-[7px] font-mono uppercase tracking-[0.5em] text-black/20 block">FINAL PAGE</span>
-        <h2 className="font-caveat text-[clamp(1.2rem,5vw,2.2rem)] font-black text-black/80 italic leading-tight uppercase tracking-tight">
-          LET’S BUILD THE<br />NEXT CHAPTER
+    <div className="w-full h-full flex flex-col relative" style={PAGE_BG}>
+      <Scanlines />
+      <PageHeader tag="FINAL_PAGE" code="EOF" />
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-5 md:px-7 py-5 gap-4">
+        <span className="font-mono text-[9px] uppercase tracking-[0.5em] text-white/45">
+          NEXT_CHAPTER
+        </span>
+        <h2 className="font-black text-2xl md:text-[1.9rem] uppercase tracking-tighter leading-[0.85] text-white">
+          LET&apos;S BUILD<br />
+          <span className="text-[var(--accent-red)]">VOL_02</span>
         </h2>
-        <p className="font-caveat text-xs md:text-sm text-black/45 italic max-w-[180px] md:max-w-[200px] leading-relaxed">
-          Great work starts with a conversation. Open to new opportunities.
+        <p className="font-mono text-[10px] md:text-[11px] text-white/55 leading-relaxed max-w-[220px]">
+          Open to new collaborations, full-time, and contract.
         </p>
         <a
           href="mailto:haseebc1999@gmail.com"
-          onClick={e => e.stopPropagation()}
-          className="mt-2 inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 bg-black text-white font-mono text-[7px] md:text-[8px] uppercase tracking-[0.25em] rounded-full hover:bg-black/80 transition-colors pointer-events-auto"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-red)] text-black font-mono text-[9px] uppercase tracking-[0.35em] hover:bg-white transition-colors pointer-events-auto brut-hardshadow-white"
+          style={{ boxShadow: "4px 4px 0 0 #ffffff" }}
         >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
-          </svg>
           haseebc1999@gmail.com
         </a>
       </div>
+      <PageFooter left="UPLINK_READY" right="● OPEN" />
     </div>
   );
 }
 
 function BlankPage() {
   return (
-    <div className="w-full h-full flex items-center justify-center relative opacity-30">
-      <RuledLines />
-      <span className="font-caveat text-[8px] uppercase tracking-widest text-black/10">Blank Sheet</span>
+    <div className="w-full h-full flex items-center justify-center relative opacity-40" style={PAGE_BG}>
+      <Scanlines />
+      <span className="font-mono text-[8px] uppercase tracking-[0.5em] text-white/20">PAGE_INTENTIONALLY_BLANK</span>
     </div>
   );
 }
 
-// ── BOOK PAGES DATA ──
-// Spread-based model: Every sheet has content on both sides.
+// ── BOOK SHEETS ──────────────────────────────────────────────────────────────
 const SHEETS = [
-  // Sheet 0: Cover flips to show Photo (inside left)
+  // Sheet 0: Cover (front) → Photo (back, inside left)
   {
     isCover: true,
     front: (
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center shadow-[inset_10px_0_30px_rgba(0,0,0,0.5)] bg-[#1a1a1a]"
-        style={{ backgroundImage: "url('/Book textures/cover_texture.jpg')", backgroundSize: "cover" }}
+        className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-[#050505] border border-[var(--accent-red)] brut-noise"
+        style={{ boxShadow: "inset 0 0 60px rgba(0,0,0,0.8)" }}
       >
-        <div className="w-full h-full border-2 border-black/20 rounded-sm flex flex-col items-center justify-center p-6 md:p-8 bg-black/10 shadow-inner">
-          <h2 className="text-2xl md:text-5xl font-black text-black/85 uppercase tracking-tighter italic leading-[0.85]">
-            Experience<br />Archive
-          </h2>
-          <p className="mt-3 md:mt-4 text-black/40 text-[8px] md:text-[10px] font-mono tracking-[0.4em] uppercase font-bold">REGISTRY VOL. 01</p>
-          <div className="mt-3 md:mt-4 w-6 md:w-8 h-0.5 bg-black/30" />
+        <div className="absolute inset-3 border border-white/15" />
+        <div className="absolute inset-0 brut-scanlines pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-3">
+          <BrandTitle
+            kicker="CLASSIFIED ARCHIVE"
+            primary="EXPERIENCE"
+            accent="REGISTRY"
+            accentFilled
+            size="mid"
+            align="center"
+          />
+          <div className="w-10 h-[2px] bg-[var(--accent-red)] my-2" />
+          <p className="font-mono text-[8px] md:text-[9px] uppercase tracking-[0.45em] text-white/55">
+            VOL_01 // 2019 — 2026
+          </p>
+          <p className="font-mono text-[8px] uppercase tracking-[0.4em] text-[var(--accent-red)] mt-3 brut-blink">
+            ▮ TAP TO OPEN
+          </p>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent pointer-events-none" />
       </div>
     ),
-    back: <PagePhoto /> 
+    back: <PagePhoto />,
   },
-  // Sheet 1: Bio flips to show Job 0
-  {
-    front: <PageBio />,
-    back: <PageJob job={JOBS[0]} />
-  },
-  // Sheet 2: Job 1 flips to show Job 2
-  {
-    front: <PageJob job={JOBS[1]} />,
-    back: <PageJob job={JOBS[2]} />
-  },
-  // Sheet 3: Job 3 flips to show Job 4
-  {
-    front: <PageJob job={JOBS[3]} />,
-    back: <PageJob job={JOBS[4]} />
-  },
-  // Sheet 4: Final Content (CTA)
-  // We don't flip this one to a blank back; it's the anchor of the right side.
-  {
-    front: <PageCta />,
-    back: <BlankPage />
-  }
+  // Sheet 1: Bio → Job 0
+  { front: <PageBio />, back: <PageJob job={JOBS[0]} index={0} /> },
+  // Sheet 2: Job 1 → Job 2
+  { front: <PageJob job={JOBS[1]} index={1} />, back: <PageJob job={JOBS[2]} index={2} /> },
+  // Sheet 3: Job 3 → Job 4
+  { front: <PageJob job={JOBS[3]} index={3} />, back: <PageJob job={JOBS[4]} index={4} /> },
+  // Sheet 4: Final CTA
+  { front: <PageCta />, back: <BlankPage /> },
 ];
 
 // ── MAIN COMPONENT ─────────────────────────────────────────────────────────────
+interface ExperienceJourneyProps {
+  isFramed?: boolean;
+  onClose?: () => void;
+}
 
-export default function ExperienceJourney() {
-  const [currentFlip, setCurrentFlip] = useState(0); 
-  // We subtract 1 from maxFlips because the last sheet (CTA) is the terminal page and shouldn't be flipped.
+export default function ExperienceJourney({ isFramed = false }: ExperienceJourneyProps) {
+  const [currentFlip, setCurrentFlip] = useState(0);
   const maxFlips = SHEETS.length - 1;
-  
   const isOpen = currentFlip > 0;
 
-  const nextFlip = () => setCurrentFlip(p => Math.min(p + 1, maxFlips));
-  const prevFlip = () => setCurrentFlip(p => Math.max(p - 1, 0));
+  const nextFlip = () => setCurrentFlip((p) => Math.min(p + 1, maxFlips));
+  const prevFlip = () => setCurrentFlip((p) => Math.max(p - 1, 0));
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center select-none pointer-events-none pt-12 md:pt-20">
-      
+    <div
+      className={`relative w-full h-full flex flex-col items-center justify-center select-none ${
+        isFramed ? "pointer-events-none scale-[0.6]" : "pointer-events-auto"
+      }`}
+    >
       {/* Click outside to close */}
-      {isOpen && (
-        <div 
-          className="absolute inset-[-3000px] z-0 pointer-events-auto" 
-          onPointerDown={() => setCurrentFlip(0)} 
+      {!isFramed && isOpen && (
+        <div
+          className="absolute inset-[-3000px] z-0 pointer-events-auto"
+          onPointerDown={() => setCurrentFlip(0)}
         />
       )}
 
-      <div className="relative z-10 flex items-end gap-6 md:gap-14 pointer-events-none">
-
-        {/* FOUNTAIN PEN moved to AFTER the book */}
+      <div className="relative z-10 flex items-end gap-6 md:gap-14">
         <motion.div
           className="relative pointer-events-auto"
-          style={{ perspective: "2500px" }} // Increased perspective for deeper flip
-          animate={{ scale: isOpen ? 1.05 : 1, y: isOpen ? 25 : 0, rotateZ: isOpen ? 0 : -8 }}
+          style={{ perspective: "2500px" }}
+          animate={{ scale: isOpen ? 1.05 : 1, y: isOpen ? 25 : 0, rotateZ: isOpen ? 0 : -2 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Book bounding box (Right half of the spread initially, expands to full spread) */}
-          <motion.div
-            className="relative w-[75vw] md:w-[45vw] max-w-[280px] md:max-w-[380px] h-[60vh] md:h-[65vh] max-h-[550px]"
-          >
-
-            {/* ── BASE RIGHT COVER (The Back of the Book) ── */}
+          <motion.div className="relative w-[78vw] md:w-[45vw] max-w-[300px] md:max-w-[400px] h-[62vh] md:h-[68vh] max-h-[600px]">
+            {/* Base back cover (right of spread) — slimmed: no hatch and a
+                much subtler red offset so it doesn't read as a giant plate
+                around the book. */}
             <div
-              className="absolute inset-0 rounded-r-lg shadow-[8px_8px_40px_rgba(0,0,0,0.25)] border-l border-black/5"
-              style={{ ...PAPER_BG, backgroundColor: "#d4c5b2", zIndex: -1 }}
+              className="absolute inset-0 border border-white/12 bg-[#0a0a0a]"
+              style={{ zIndex: -1, boxShadow: "4px 4px 0 0 rgba(255,51,51,0.55)" }}
             >
-                <div className="absolute left-0 w-4 h-full bg-gradient-to-r from-black/10 to-transparent" />
+              <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/40 to-transparent" />
             </div>
 
-            {/* ── STACK OF SHEETS ── */}
-            {/* Rendered back-to-front so lower sheets (higher index) are physically lower in the un-flipped stack */}
+            {/* Stack of sheets */}
             {SHEETS.map((sheet, index) => {
-              const isFlipped = currentFlip > index; 
-              // If un-flipped: smaller index is on TOP (z = 100 - index). 
-              // If flipped: smaller index goes to BOTTOM of left stack (z = index).
-              const zIndex = isFlipped ? index : (100 - index);
-              
-              // Slight physical thickness displacement for realism
-              // Removed 3D depth to prevent intersection clipping; using pure zIndex stacking instead.
-              const targetZIndex = isFlipped ? index : (100 - index);
+              const isFlipped = currentFlip > index;
+              const targetZIndex = isFlipped ? index : 100 - index;
 
               return (
                 <motion.div
@@ -316,77 +347,70 @@ export default function ExperienceJourney() {
                   className="absolute inset-0 cursor-pointer origin-left"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Click the sheet itself to toggle it
-                    if (isFlipped) prevFlip(); 
+                    if (isFlipped) prevFlip();
                     else nextFlip();
                   }}
                   initial={false}
-                  animate={{ 
-                    rotateY: isFlipped ? -179.9 : 0, // Using 179.9 to avoid edge-case rendering issues at exactly 180
-                    zIndex: targetZIndex
-                  }}
-                  transition={{ 
-                    duration: 1.0, 
-                    ease: [0.645, 0.045, 0.355, 1], // Cubic-bezier for more natural "weight"
-                    zIndex: { delay: isFlipped ? 0.35 : 0.6, duration: 0.01 } // Delay z-change until vertical
+                  animate={{ rotateY: isFlipped ? -179.9 : 0, zIndex: targetZIndex }}
+                  transition={{
+                    duration: 1.0,
+                    ease: [0.645, 0.045, 0.355, 1],
+                    zIndex: { delay: isFlipped ? 0.35 : 0.6, duration: 0.01 },
                   }}
                   style={{ transformStyle: "preserve-3d" }}
                 >
-                  
-                  {/* FRONT FACE (Shows when on right) */}
+                  {/* FRONT */}
                   <div
-                    className="absolute inset-0 rounded-r-md border-l border-black/5"
-                    style={{ 
-                      backfaceVisibility: "hidden", 
+                    className="absolute inset-0 border border-white/10"
+                    style={{
+                      backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
-                      ...(sheet.isCover ? {} : PAPER_BG),
-                      boxShadow: isFlipped ? "none" : "-2px 0 10px rgba(0,0,0,0.05)"
+                      boxShadow: isFlipped ? "none" : "-2px 0 12px rgba(0,0,0,0.6)",
                     }}
                   >
                     {sheet.front}
-                    {/* Inner Right Shadow (spine bend) */}
-                    {!sheet.isCover && <div className="absolute top-0 left-0 bottom-0 w-6 bg-gradient-to-r from-black/15 to-transparent pointer-events-none" />}
+                    {/* Spine bend */}
+                    {!sheet.isCover && (
+                      <div className="absolute top-0 left-0 bottom-0 w-5 bg-gradient-to-r from-black/40 to-transparent pointer-events-none" />
+                    )}
                   </div>
 
-                  {/* BACK FACE (Shows when turned to the left) */}
+                  {/* BACK */}
                   <div
-                    className="absolute inset-0 rounded-l-md border-r border-black/5"
-                    style={{ 
-                      backfaceVisibility: "hidden", 
+                    className="absolute inset-0 border border-white/10"
+                    style={{
+                      backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)", 
-                      ...PAPER_BG,
-                      boxShadow: isFlipped ? "2px 0 10px rgba(0,0,0,0.05)" : "none"
+                      transform: "rotateY(180deg)",
+                      boxShadow: isFlipped ? "2px 0 12px rgba(0,0,0,0.6)" : "none",
                     }}
                   >
                     {sheet.back}
-                    {/* Inner Left Shadow (spine bend) */}
-                    <div className="absolute top-0 right-0 bottom-0 w-6 bg-gradient-to-l from-black/15 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 right-0 bottom-0 w-5 bg-gradient-to-l from-black/40 to-transparent pointer-events-none" />
                   </div>
-
                 </motion.div>
               );
             })}
-
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Page indicator below book */}
+      {/* Page indicator */}
       <div className="mt-8 flex flex-col items-center gap-2 pointer-events-none">
-        <p className="text-black/50 text-[9px] uppercase font-mono tracking-[0.4em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] font-bold">
-          {isOpen ? `Spread ${currentFlip} / ${maxFlips}` : "Click cover to open archive"}
+        <p className="font-mono text-[9px] uppercase tracking-[0.45em] text-white/55">
+          {isOpen ? `SPREAD ${currentFlip} / ${maxFlips}` : "▮ TAP COVER TO OPEN"}
         </p>
         {isOpen && (
           <div className="flex gap-2">
             {Array.from({ length: maxFlips }, (_, i) => (
               <div
                 key={i}
-                className="rounded-full transition-all duration-300"
+                className="transition-all duration-300"
                 style={{
-                  width: i + 1 === currentFlip ? 16 : 4,
-                  height: 4,
-                  background: i + 1 === currentFlip ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.15)",
+                  width: i + 1 === currentFlip ? 20 : 6,
+                  height: 3,
+                  background:
+                    i + 1 === currentFlip ? "var(--accent-red)" : "rgba(255,255,255,0.18)",
                 }}
               />
             ))}

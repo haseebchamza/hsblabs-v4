@@ -1,17 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import Scene from "./Scene";
+
 import { playHoverSound } from "../lib/audio";
 
 export default function FloatingNav() {
-    const [isVisible, setIsVisible] = useState(false);
+    const [isVisible] = useState(true);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const navRef = useRef<HTMLDivElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
-    // CSS 3D cursor-like rotating element (no WebGL!)
-    const rotRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => { setIsVisible(true); }, []);
 
     // Remove the CSS 3D rotation effect as we'll use the real Scenę component
     /*
@@ -49,8 +45,11 @@ export default function FloatingNav() {
         if (isAudioPlaying) {
             audioRef.current.pause();
             setIsAudioPlaying(false);
+            // Mute the click + sting effects too
+            if (typeof window !== "undefined") window.__hsbMuted = true;
         } else {
             audioRef.current.play().then(() => setIsAudioPlaying(true)).catch(() => { });
+            if (typeof window !== "undefined") window.__hsbMuted = false;
         }
     };
 
@@ -76,8 +75,8 @@ export default function FloatingNav() {
                             aria-label="Home"
                             className="w-12 h-12 md:w-16 md:h-16 relative flex items-center justify-center border-r border-white/10 hover:bg-white/5 transition-colors shrink-0 overflow-hidden"
                         >
-                            <div className="absolute inset-0 flex items-center justify-center scale-[0.4] md:scale-[0.5] translate-x-[6px] md:translate-x-[8px] translate-y-[4px] md:translate-y-[6px]">
-                                <Scene className="w-full h-full pointer-events-none" scale={1.2} />
+                            <div className="absolute inset-0 flex items-center justify-center p-2 pl-4 overflow-visible">
+                                <img src="/HASEEB.svg" className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" alt="Logo" />
                             </div>
                         </button>
 
@@ -86,26 +85,26 @@ export default function FloatingNav() {
                             <button
                                 onClick={() => panTo("projects")}
                                 onMouseEnter={playHoverSound}
-                                className="hover:text-white transition-colors py-4 md:py-5 relative group"
+                                className="hover:text-[#ff3333] transition-colors py-4 md:py-5 relative group"
                             >
                                 PROJECTS
-                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-white scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-[#ff3333] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                             </button>
                             <button
                                 onClick={() => panTo("about")}
                                 onMouseEnter={playHoverSound}
-                                className="hover:text-white transition-colors py-4 md:py-5 relative group"
+                                className="hover:text-[#ff3333] transition-colors py-4 md:py-5 relative group"
                             >
                                 ABOUT
-                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-white scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-[#ff3333] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                             </button>
                             <button
                                 onClick={() => window.dispatchEvent(new CustomEvent('triggerCinematicReveal'))}
                                 onMouseEnter={playHoverSound}
-                                className="hover:text-white transition-colors py-4 md:py-5 relative group"
+                                className="hover:text-[#ff3333] transition-colors py-4 md:py-5 relative group"
                             >
                                 CONTACT
-                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-white scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                <span className="absolute bottom-2 md:bottom-3 left-0 w-full h-px bg-[#ff3333] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                             </button>
                         </nav>
 

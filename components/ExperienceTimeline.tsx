@@ -28,7 +28,7 @@ const JOBS: Job[] = [
         tags: ["Figma", "Hotjar", "Landing Pages", "AI Tools", "Real Estate"],
     },
     {
-        period: "MAR 2025 — PRESENT",
+        period: "FEB 2025 — JUN 2025",
         company: "Union Square House",
         role: "Visual Designer",
         location: "Dubai, UAE",
@@ -117,7 +117,7 @@ export default function ExperienceTimeline() {
                                 key={`${job.company}-${i}`}
                                 job={job}
                                 index={i}
-                                isLast={i === JOBS.length - 1}
+                                isCurrent={/present/i.test(job.period)}
                             />
                         ))}
                     </ul>
@@ -143,11 +143,11 @@ export default function ExperienceTimeline() {
 function TimelineEntry({
     job,
     index,
-    isLast,
+    isCurrent,
 }: {
     job: Job;
     index: number;
-    isLast: boolean;
+    isCurrent: boolean;
 }) {
     const fileNo = String(index + 1).padStart(2, "0");
 
@@ -188,9 +188,11 @@ function TimelineEntry({
                             {job.period}
                         </span>
                     </div>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.4em] text-white/40 flex items-center gap-1.5">
-                        {isLast ? "ORIGIN" : "ARCHIVED"}
-                        <span className={`w-1.5 h-1.5 ${isLast ? "bg-[var(--accent-red)] brut-blink" : "bg-white/30"}`} />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.4em] flex items-center gap-1.5">
+                        <span className={isCurrent ? "text-[var(--accent-red)]" : "text-white/40"}>
+                            {isCurrent ? "ACTIVE" : "ARCHIVED"}
+                        </span>
+                        <span className={`w-1.5 h-1.5 ${isCurrent ? "bg-[var(--accent-red)] brut-blink" : "bg-white/30"}`} />
                     </span>
                 </header>
 

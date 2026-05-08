@@ -77,15 +77,19 @@ interface WorkSectionProps {
 
 export default function WorkSection({ onProjectOpen }: WorkSectionProps) {
     const trackRef = useRef<HTMLDivElement>(null);
-    // Track drag state — used to (a) suppress click-through on the project
-    // tile if the user actually dragged, and (b) update the cursor.
+    // Track drag state. We only acquire pointer capture AFTER the user has
+    // actually moved past a small threshold — capturing on pointerdown was
+    // blocking click events from reaching the project tiles on desktop.
     const dragState = useRef<{
         isDown: boolean;
+        captured: boolean;
         startX: number;
         startScroll: number;
         moved: number;
-    }>({ isDown: false, startX: 0, startScroll: 0, moved: 0 });
+        pointerId: number;
+    }>({ isDown: false, captured: false, startX: 0, startScroll: 0, moved: 0, pointerId: -1 });
     const [isDragging, setIsDragging] = useState(false);
+    const DRAG_THRESHOLD = 5; // px before we treat it as a drag, not a click
 
     const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
         // Only attach drag-to-scroll for mouse / pen — let touch use native momentum.
@@ -94,14 +98,13 @@ export default function WorkSection({ onProjectOpen }: WorkSectionProps) {
         if (!el) return;
         dragState.current = {
             isDown: true,
+            captured: false,
             startX: e.clientX,
             startScroll: el.scrollLeft,
             moved: 0,
+            pointerId: e.pointerId,
         };
-        // Don't capture the pointer on the buttons — capture on the track itself
-        // so subsequent move/up land here, not on a card that blocks them.
-        el.setPointerCapture(e.pointerId);
-        setIsDragging(true);
+        // No pointer capture yet, no isDragging yet — wait until real movement.
     }, []);
 
     const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -111,27 +114,39 @@ export default function WorkSection({ onProjectOpen }: WorkSectionProps) {
         if (!el) return;
         const dx = e.clientX - s.startX;
         s.moved = Math.max(s.moved, Math.abs(dx));
+
+        if (!s.captured) {
+            // Only become a "drag" once we've crossed the threshold. Until then,
+            // the gesture is still potentially a click and shouldn't capture.
+            if (s.moved < DRAG_THRESHOLD) return;
+            try { el.setPointerCapture(s.pointerId); } catch { /* noop */ }
+            s.captured = true;
+            setIsDragging(true);
+        }
+
         el.scrollLeft = s.startScroll - dx;
     }, []);
 
     const endDrag = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
         const s = dragState.current;
         if (!s.isDown) return;
+        const wasDrag = s.captured;
         s.isDown = false;
         const el = trackRef.current;
-        if (el) {
+        if (el && wasDrag) {
             try { el.releasePointerCapture(e.pointerId); } catch { /* noop */ }
         }
-        // If the user dragged more than ~6px, swallow the upcoming click on
-        // whichever project tile is under the pointer so they don't open
-        // a case study just because they tried to scroll.
-        if (s.moved > 6) {
+        // If we actually dragged, swallow the next click so they don't open
+        // a project tile just because they were scrolling. If we never
+        // captured, the gesture was a click — let it propagate naturally.
+        if (wasDrag) {
             const swallow = (ev: MouseEvent) => {
                 ev.stopPropagation();
                 ev.preventDefault();
             };
             window.addEventListener("click", swallow, { capture: true, once: true });
         }
+        s.captured = false;
         setIsDragging(false);
     }, []);
 
